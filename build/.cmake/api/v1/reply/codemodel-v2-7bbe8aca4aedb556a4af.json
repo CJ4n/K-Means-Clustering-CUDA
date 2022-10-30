@@ -49,8 +49,8 @@
 	"kind" : "codemodel",
 	"paths" : 
 	{
-		"build" : "/home/jan/Desktop/kMeansClusteringCuda/build",
-		"source" : "/home/jan/Desktop/kMeansClusteringCuda"
+		"build" : "/home/jan/Desktop/K-Means-Clustering-CUDA/build",
+		"source" : "/home/jan/Desktop/K-Means-Clustering-CUDA"
 	},
 	"version" : 
 	{

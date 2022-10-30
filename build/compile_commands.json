@@ -1,7 +1,7 @@
 [
 {
-  "directory": "/home/jan/Desktop/kMeansClusteringCuda/build",
-  "command": "/usr/bin/g++   -g -o CMakeFiles/mainCudaApp.dir/kernal.cpp.o -c /home/jan/Desktop/kMeansClusteringCuda/kernal.cpp",
-  "file": "/home/jan/Desktop/kMeansClusteringCuda/kernal.cpp"
+  "directory": "/home/jan/Desktop/K-Means-Clustering-CUDA/build",
+  "command": "/usr/bin/g++   -g -o CMakeFiles/mainCudaApp.dir/kernal.cpp.o -c /home/jan/Desktop/K-Means-Clustering-CUDA/kernal.cpp",
+  "file": "/home/jan/Desktop/K-Means-Clustering-CUDA/kernal.cpp"
 }
 ]

@@ -55,7 +55,7 @@
 				}
 			],
 			"type" : "INTERNAL",
-			"value" : "/home/jan/Desktop/kMeansClusteringCuda/build"
+			"value" : "/home/jan/Desktop/K-Means-Clustering-CUDA/build"
 		},
 		{
 			"name" : "CMAKE_CACHE_MAJOR_VERSION",
@@ -251,10 +251,10 @@
 				},
 				{
 					"name" : "HELPSTRING",
-					"value" : "No help, variable specified on the command line."
+					"value" : "CXX compiler"
 				}
 			],
-			"type" : "FILEPATH",
+			"type" : "STRING",
 			"value" : "/usr/bin/g++"
 		},
 		{
@@ -571,7 +571,7 @@
 				}
 			],
 			"type" : "INTERNAL",
-			"value" : "/home/jan/Desktop/kMeansClusteringCuda"
+			"value" : "/home/jan/Desktop/K-Means-Clustering-CUDA"
 		},
 		{
 			"name" : "CMAKE_INSTALL_PREFIX",
@@ -1107,7 +1107,7 @@
 				}
 			],
 			"type" : "STATIC",
-			"value" : "/home/jan/Desktop/kMeansClusteringCuda/build"
+			"value" : "/home/jan/Desktop/K-Means-Clustering-CUDA/build"
 		},
 		{
 			"name" : "CudaApp_IS_TOP_LEVEL",
@@ -1131,7 +1131,7 @@
 				}
 			],
 			"type" : "STATIC",
-			"value" : "/home/jan/Desktop/kMeansClusteringCuda"
+			"value" : "/home/jan/Desktop/K-Means-Clustering-CUDA"
 		}
 	],
 	"kind" : "cache",
