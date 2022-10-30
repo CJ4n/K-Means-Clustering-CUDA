@@ -1,0 +1,7 @@
+[
+{
+  "directory": "/home/jan/Desktop/kMeansClusteringCuda/build",
+  "command": "/usr/bin/g++   -g -o CMakeFiles/mainCudaApp.dir/kernal.cpp.o -c /home/jan/Desktop/kMeansClusteringCuda/kernal.cpp",
+  "file": "/home/jan/Desktop/kMeansClusteringCuda/kernal.cpp"
+}
+]

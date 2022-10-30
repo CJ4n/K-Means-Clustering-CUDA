@@ -1,0 +1,3 @@
+/home/jan/Desktop/kMeansClusteringCuda/CMakeFiles/mainCudaApp.dir
+/home/jan/Desktop/kMeansClusteringCuda/CMakeFiles/edit_cache.dir
+/home/jan/Desktop/kMeansClusteringCuda/CMakeFiles/rebuild_cache.dir

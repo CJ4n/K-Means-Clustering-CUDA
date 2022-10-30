@@ -1,0 +1,1 @@
+/usr/bin/g++ -g CMakeFiles/mainCudaApp.dir/kernal.cpp.o -o mainCudaApp 
