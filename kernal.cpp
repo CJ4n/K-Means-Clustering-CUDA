@@ -42,11 +42,11 @@ struct Point
 
 struct pt
 {
-	double *x;
-	double *y;
+	double **features;
 	int *cluster;
 	double *minDist;
 	int n;
+	int features_number;
 };
 
 double distance(Point p1, Point p2)
@@ -56,12 +56,6 @@ double distance(Point p1, Point p2)
 pt readCsv()
 {
 	std::vector<Point> points;
-	// pt point;
-	// point.x = (double *)malloc(sizeof(double) * n);
-	// point.y = (double *)malloc(sizeof(double) * n);
-	// point.cluster = (int *)malloc(sizeof(int) * n);
-	// point.minDist = (double *)malloc(sizeof(double) * n);
-
 	std::string line;
 	std::ifstream file("mall_data.csv");
 	std::getline(file, line);
@@ -81,15 +75,24 @@ pt readCsv()
 	pt point;
 	int n = points.size();
 	point.n = n;
-	point.x = (double *)malloc(sizeof(double) * n);
-	point.y = (double *)malloc(sizeof(double) * n);
 	point.cluster = (int *)malloc(sizeof(int) * n);
 	point.minDist = (double *)malloc(sizeof(double) * n);
+	point.features_number = 2;
+	point.features = (double **)malloc(sizeof(double *) * point.features_number);
+	for (int feature = 0; feature < point.features_number; ++feature)
+	{
+		point.features[feature] = (double *)malloc(sizeof(double) * point.n);
+	}
 	int i = 0;
 	for (std::vector<Point>::iterator it = points.begin(); it != points.end(); ++it)
 	{
-		point.x[i] = it->x;
-		point.y[i] = it->y;
+		double XY[2];
+		XY[0] = it->x;
+		XY[1] = it->y;
+		for (int feature = 0; feature < point.features_number; ++feature)
+		{
+			point.features[feature][i] = XY[feature];
+		}
 		point.cluster[i] = it->cluster;
 		point.minDist[i] = __DBL_MAX__;
 		i++;
@@ -104,132 +107,114 @@ void saveCsv(pt *point, std::string file_name)
 	myfile.open(file_name);
 	myfile << "x,y,c" << std::endl;
 
-	// for (std::vector<Point>::iterator it = points->begin(); it != points->end(); ++it)
 	for (int i = 0; i < point->n; ++i)
 	{
-		myfile << point->x[i] << "," << point->y[i] << "," << point->cluster[i] << std::endl;
+		for (int feature = 0; feature < point->features_number; ++feature)
+		{
+			myfile << point->features[feature][i];
+			myfile << ",";
+		}
+
+		myfile << point->cluster[i] << std::endl;
 	}
 	myfile.close();
 }
 
-double distance(double x1, double y1, double x2, double y2)
+double distance(pt *p1, pt *p2, int point_id, int cluster_id)
 {
-	return (x1 - x2) * (x1 - x2) + (y1 - y2) * (y1 - y2);
+	double error = 0;
+	for (int feature = 0; feature < p2->features_number; ++feature)
+	{
+		error += (p1->features[feature][cluster_id] - p2->features[feature][point_id]) * (p1->features[feature][cluster_id] - p2->features[feature][point_id]);
+	}
+	return error;
 }
 double MeanSquareError(pt *point, pt *centroid)
 {
 	double error = 0;
-	// for (std::vector<Point>::iterator it = points->begin(); it != points->end(); ++it)
 	for (int i = 0; i < point->n; ++i)
 	{
-		error += distance(centroid->x[point->cluster[i]], centroid->y[point->cluster[i]], point->x[i], point->y[i]);
+		error += distance(centroid, point, i, point->cluster[i]);
 	}
 	return error / point->n;
 }
-void findClosestCentroids(pt *points, pt *centroids, int k)
+void k_means_iteration(pt *points, pt *centroids, int num_clusters)
 {
 	std::vector<int> nPoints;
-	std::vector<double> sumX, sumY;
-	for (int j = 0; j < k; ++j)
+	std::vector<std::vector<double>> sum;
+	for (int j = 0; j < num_clusters; ++j)
 	{
 		nPoints.push_back(0);
-		sumX.push_back(0.0);
-		sumY.push_back(0.0);
+		std::vector<double> tmp;
+		for (int feature = 0; feature < points->features_number; ++feature)
+		{
+			tmp.push_back(0.0);
+		}
+		sum.push_back(tmp);
 	}
 
-	// for (std::vector<Point>::iterator it = points->begin(); it != points->end(); ++it)
 	for (int p = 0; p < points->n; ++p)
 	{
-		// for (std::vector<Point>::iterator c = std::begin(*centroids); c != std::end(*centroids); ++c)
 		for (int c = 0; c < centroids->n; ++c)
 		{
-			// quick hack to get cluster index
-			// int clusterId = c - std::begin(*centroids);
-
-			// Point p = *it;
-			double dist = distance(centroids->x[c], centroids->y[c], points->x[p], points->y[p]);
+			double dist = distance(centroids, points, p, c);
 			if (dist < points->minDist[p])
 			{
 				points->minDist[p] = dist;
 				points->cluster[p] = c;
 			}
-			// *it = p;
 		}
-		sumX[points->cluster[p]] += points->x[p];
-		sumY[points->cluster[p]] += points->y[p];
+		for (int feature = 0; feature < points->features_number; ++feature)
+		{
+			sum[points->cluster[p]][feature] += points->features[feature][p];
+		}
 		nPoints[points->cluster[p]]++;
 	}
-	// for (std::vector<Point>::iterator c = std::begin(*centroids); c != std::end(*centroids); ++c)
 	for (int c = 0; c < centroids->n; ++c)
-
 	{
-		// int clusterId = c - std::begin(*centroids);
-		centroids->x[c] = sumX[c] / nPoints[c];
-		centroids->y[c] = sumY[c] / nPoints[c];
-		// std::cout << "cluster: " << c->x << ", " << c->y << std::endl;
+		for (int feature = 0; feature < points->features_number; ++feature)
+		{
+			centroids->features[feature][c] = sum[c][feature] / nPoints[c];
+		}
 	}
 }
 
-void kMeansClustering(pt *point, int epochs, int k)
+void kMeansClustering(pt *point, int epochs, int num_clusters)
 {
 	pt centroids;
-	centroids.x = (double *)malloc(k * sizeof(double));
-	centroids.y = (double *)malloc(k * sizeof(double));
-	centroids.cluster = (int *)malloc(k * sizeof(double));
-	std::srand(time(0)); // need to set the random seed
-	for (int i = 0; i < k; ++i)
+	centroids.n = point->n;
+	centroids.features_number = point->features_number;
+	centroids.features = (double **)malloc(sizeof(double *) * centroids.features_number);
+	for (int feature = 0; feature < centroids.features_number; ++feature)
 	{
-		// centroids.push_back(points->at(rand() % points->size()));
+		centroids.features[feature] = (double *)malloc(sizeof(double) * centroids.n);
+	}
+
+	centroids.cluster = (int *)malloc(num_clusters * sizeof(double));
+	std::srand(time(0)); // need to set the random seed
+	for (int i = 0; i < num_clusters; ++i)
+	{
 		int n = rand() % point->n;
-		centroids.x[i] = point->x[n];
-		centroids.y[i] = point->y[n];
+		for (int feature = 0; feature < point->features_number; ++feature)
+		{
+			centroids.features[feature][i] = point->features[feature][n];
+		}
+
 		centroids.cluster[i] = i;
 	}
-	centroids.n = k;
+	centroids.n = num_clusters;
 
 	for (int epoch = 0; epoch < epochs; ++epoch)
 	{
-
-		findClosestCentroids(point, &centroids, k);
+		k_means_iteration(point, &centroids, num_clusters);
 		std::cout << "epoch: " << epoch << " Error: " << MeanSquareError(point, &centroids) << std::endl;
-
-		// std::vector<int> nPoints;
-		// std::vector<double> sumX, sumY;
-
-		// // Initialise with zeroes
-		// for (int j = 0; j < k; ++j)
-		// {
-		// 	nPoints.push_back(0);
-		// 	sumX.push_back(0.0);
-		// 	sumY.push_back(0.0);
-		// }
-		// Iterate over points to append data to centroids
-		// for (std::vector<Point>::iterator it = points->begin();
-		// 	 it != points->end(); ++it)
-		// {
-		// 	int clusterId = it->cluster;
-		// 	nPoints[clusterId] += 1;
-		// 	sumX[clusterId] += it->x;
-		// 	sumY[clusterId] += it->y;
-
-		// 	it->minDist = __DBL_MAX__; // reset distance
-		// }
-
-		// Compute the new centroids
-		// for (std::vector<Point>::iterator c = begin(centroids);
-		// 	 c != end(centroids); ++c)
-		// {
-		// 	int clusterId = c - begin(centroids);
-		// 	c->x = sumX[clusterId] / nPoints[clusterId];
-		// 	c->y = sumY[clusterId] / nPoints[clusterId];
-		// 	// std::cout << "cluster: " << c->x << ", " << c->y << std::endl;
-		// }
+		saveCsv(point, "train" + std::to_string(epoch) + ".csv");
 	}
 }
 int main(int argc, char **argv)
 {
 	auto point = readCsv();
-	kMeansClustering(&point, 30, 5);
+	kMeansClustering(&point, 6, 5);
 	saveCsv(&point, "output.csv");
 
 	return 0;
