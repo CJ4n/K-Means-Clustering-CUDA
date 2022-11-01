@@ -138,21 +138,28 @@ double MeanSquareError(pt *point, pt *centroid)
 	}
 	return error / point->n;
 }
-void k_means_iteration(pt *points, pt *centroids, int num_clusters)
+void k_means_one_iteration(pt *points, pt *centroids, int num_clusters)
 {
-	std::vector<int> nPoints;
-	std::vector<std::vector<double>> sum;
-	for (int j = 0; j < num_clusters; ++j)
+	// init
+	int *nPoints = (int *)malloc(sizeof(int) * num_clusters);
+	double **sum = (double **)malloc(sizeof(double *) * centroids->features_number);
+	for (int feature = 0; feature < points->features_number; ++feature)
 	{
-		nPoints.push_back(0);
+		sum[feature] = (double *)malloc(sizeof(double) * num_clusters);
+	}
+	for (int c = 0; c < num_clusters; ++c)
+	{
+		nPoints[c] = 0;
 		std::vector<double> tmp;
+
 		for (int feature = 0; feature < points->features_number; ++feature)
 		{
-			tmp.push_back(0.0);
+			sum[feature][c] = 0;
 		}
-		sum.push_back(tmp);
 	}
+	// init
 
+	// get nearest cluster
 	for (int p = 0; p < points->n; ++p)
 	{
 		for (int c = 0; c < centroids->n; ++c)
@@ -166,17 +173,21 @@ void k_means_iteration(pt *points, pt *centroids, int num_clusters)
 		}
 		for (int feature = 0; feature < points->features_number; ++feature)
 		{
-			sum[points->cluster[p]][feature] += points->features[feature][p];
+			sum[feature][points->cluster[p]] += points->features[feature][p];
 		}
 		nPoints[points->cluster[p]]++;
 	}
+	// get nearest cluster
+
+	// find new clusters
 	for (int c = 0; c < centroids->n; ++c)
 	{
 		for (int feature = 0; feature < points->features_number; ++feature)
 		{
-			centroids->features[feature][c] = sum[c][feature] / nPoints[c];
+			centroids->features[feature][c] = sum[feature][c] / nPoints[c];
 		}
 	}
+	// find new clusters
 }
 
 void kMeansClustering(pt *point, int epochs, int num_clusters)
@@ -206,7 +217,7 @@ void kMeansClustering(pt *point, int epochs, int num_clusters)
 
 	for (int epoch = 0; epoch < epochs; ++epoch)
 	{
-		k_means_iteration(point, &centroids, num_clusters);
+		k_means_one_iteration(point, &centroids, num_clusters);
 		std::cout << "epoch: " << epoch << " Error: " << MeanSquareError(point, &centroids) << std::endl;
 		saveCsv(point, "train" + std::to_string(epoch) + ".csv");
 	}
