@@ -171,15 +171,24 @@ void k_means_one_iteration(pt *points, pt *centroids, int num_clusters)
 				points->cluster[p] = c;
 			}
 		}
+		// for (int feature = 0; feature < points->features_number; ++feature)
+		// {
+		// 	sum[feature][points->cluster[p]] += points->features[feature][p];
+		// }
+		// nPoints[points->cluster[p]]++;
+	}
+	// get nearest cluster
+
+	// find new clusters
+	for (int p = 0; p < points->n; ++p)
+	{
 		for (int feature = 0; feature < points->features_number; ++feature)
 		{
 			sum[feature][points->cluster[p]] += points->features[feature][p];
 		}
 		nPoints[points->cluster[p]]++;
 	}
-	// get nearest cluster
 
-	// find new clusters
 	for (int c = 0; c < centroids->n; ++c)
 	{
 		for (int feature = 0; feature < points->features_number; ++feature)
