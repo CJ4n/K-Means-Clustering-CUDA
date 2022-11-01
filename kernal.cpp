@@ -141,6 +141,7 @@ double MeanSquareError(pt *point, pt *centroid)
 void k_means_one_iteration(pt *points, pt *centroids, int num_clusters)
 {
 	// init
+
 	int *nPoints = (int *)malloc(sizeof(int) * num_clusters);
 	double **sum = (double **)malloc(sizeof(double *) * centroids->features_number);
 	for (int feature = 0; feature < points->features_number; ++feature)
@@ -157,9 +158,11 @@ void k_means_one_iteration(pt *points, pt *centroids, int num_clusters)
 			sum[feature][c] = 0;
 		}
 	}
+
 	// init
 
 	// get nearest cluster
+
 	for (int p = 0; p < points->n; ++p)
 	{
 		for (int c = 0; c < centroids->n; ++c)
@@ -177,9 +180,12 @@ void k_means_one_iteration(pt *points, pt *centroids, int num_clusters)
 		// }
 		// nPoints[points->cluster[p]]++;
 	}
+
 	// get nearest cluster
 
 	// find new clusters
+
+	// sum all points 'belonging' to each centroid
 	for (int p = 0; p < points->n; ++p)
 	{
 		for (int feature = 0; feature < points->features_number; ++feature)
@@ -188,7 +194,9 @@ void k_means_one_iteration(pt *points, pt *centroids, int num_clusters)
 		}
 		nPoints[points->cluster[p]]++;
 	}
+	// sum all points 'belonging' to each centroid
 
+	// get centroids new location
 	for (int c = 0; c < centroids->n; ++c)
 	{
 		for (int feature = 0; feature < points->features_number; ++feature)
@@ -196,6 +204,8 @@ void k_means_one_iteration(pt *points, pt *centroids, int num_clusters)
 			centroids->features[feature][c] = sum[feature][c] / nPoints[c];
 		}
 	}
+	// get centroids new location
+
 	// find new clusters
 }
 
