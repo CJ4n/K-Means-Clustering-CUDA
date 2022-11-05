@@ -7,8 +7,9 @@
 #include <sstream>	// for file-reading
 #include <vector>
 #include <math.h>
-#include <thrust/host_vector.h>
-#include <thrust/execution_policy.h>
+// #include <thrust/host_vector.h>
+#include <thrust/device_vector.h>
+// #include <thrust/execution_policy.h>
 #include <thrust/reduce.h>
 
 #define cudaCheckError()                                                                    \
@@ -216,12 +217,10 @@ void k_means_one_iteration(pt *points, pt *centroids)
 	int num_blocks = (int)std::max(std::ceil((int)(N / num_threads)), 1.0);
 	// size_t shmem_size = num_threads * sizeof(float);
 
-
 	find_closest_centroids<<<num_blocks, num_threads>>>(points, centroids);
 	cudaDeviceSynchronize();
 
 	cudaCheckError();
-
 
 	// for (int p = 0; p < points->num_data_points; ++p)
 	// {
@@ -238,7 +237,6 @@ void k_means_one_iteration(pt *points, pt *centroids)
 
 	// get nearest cluster
 
-
 	// find new clusters
 
 	// sum all points 'belonging' to each centroid
@@ -250,18 +248,47 @@ void k_means_one_iteration(pt *points, pt *centroids)
 		}
 		nPoints[points->cluster_id_of_point[p]]++;
 	}
-	thrust::reduce_by_key()
+
+	thrust::device_vector<int> centroid_id_datapoint(points->num_data_points);
+	thrust::copy(points->cluster_id_of_point, points->cluster_id_of_point + points->num_data_points, centroid_id_datapoint.begin());
+	cudaCheckError();
+	int count[5];
+	for (int c = 0; c < centroids->num_data_points; c++)
+	{
+		count[c] = thrust::count(centroid_id_datapoint.begin(), centroid_id_datapoint.end(), c);
+	
+		cudaCheckError();
+	}
+	std::cout<<std::endl;
+
+	for (int feature = 0; feature < points->features_number; ++feature)
+	{
+		thrust::device_vector<double> features(points->num_data_points);
+		thrust::device_vector<double> sum_position_of_centroid_featers_x(centroids->num_data_points);
+
+		thrust::copy(points->features_array[feature], points->features_array[feature] + points->num_data_points, features.begin());
+		cudaCheckError();
+		thrust::reduce_by_key(centroid_id_datapoint.begin(), centroid_id_datapoint.end(), features.begin(), sum_position_of_centroid_featers_x.begin(), sum_position_of_centroid_featers_x.end());
+		cudaCheckError();
+
+		for (int c = 0; c < centroids->num_data_points; c++)
+		{
+			centroids->features_array[feature][c] = sum_position_of_centroid_featers_x[c] / count[c];
+			std::cout<<sum_position_of_centroid_featers_x[c]<<", ";
+		}
+		std::cout<<std::endl;
+	}
 
 	// sum all points 'belonging' to each centroid
 
 	// get centroids new location
-	for (int c = 0; c < centroids->num_data_points; ++c)
-	{
-		for (int feature = 0; feature < points->features_number; ++feature)
-		{
-			centroids->features_array[feature][c] = sum[feature][c] / nPoints[c];
-		}
-	}
+	// for (int c = 0; c < centroids->num_data_points; ++c)
+	// {
+	// 	for (int feature = 0; feature < points->features_number; ++feature)
+	// 	{
+	// 		centroids->features_array[feature][c] = sum[feature][c] / nPoints[c];
+	// 	}
+	// }
 	// get centroids new location
 
 	// find new clusters
@@ -312,10 +339,8 @@ void kMeansClustering(pt *point, int epochs, int num_clusters)
 		k_means_one_iteration(point, centroids);
 	}
 }
-#include <unistd.h>
 int main(int argc, char **argv)
 {
-	// sleep(3000);
 	pt *point = readCsv();
 	kMeansClustering(point, 6, 5);
 	saveCsv(point, "output.csv");

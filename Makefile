@@ -129,29 +129,77 @@ mainCudaApp/fast:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/mainCudaApp.dir/build.make CMakeFiles/mainCudaApp.dir/build
 .PHONY : mainCudaApp/fast
 
-kernal.o: kernal.cu.o
-.PHONY : kernal.o
+src/k_means_cpu.o: src/k_means_cpu.cu.o
+.PHONY : src/k_means_cpu.o
 
 # target to build an object file
-kernal.cu.o:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/mainCudaApp.dir/build.make CMakeFiles/mainCudaApp.dir/kernal.cu.o
-.PHONY : kernal.cu.o
+src/k_means_cpu.cu.o:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/mainCudaApp.dir/build.make CMakeFiles/mainCudaApp.dir/src/k_means_cpu.cu.o
+.PHONY : src/k_means_cpu.cu.o
 
-kernal.i: kernal.cu.i
-.PHONY : kernal.i
+src/k_means_cpu.i: src/k_means_cpu.cu.i
+.PHONY : src/k_means_cpu.i
 
 # target to preprocess a source file
-kernal.cu.i:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/mainCudaApp.dir/build.make CMakeFiles/mainCudaApp.dir/kernal.cu.i
-.PHONY : kernal.cu.i
+src/k_means_cpu.cu.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/mainCudaApp.dir/build.make CMakeFiles/mainCudaApp.dir/src/k_means_cpu.cu.i
+.PHONY : src/k_means_cpu.cu.i
 
-kernal.s: kernal.cu.s
-.PHONY : kernal.s
+src/k_means_cpu.s: src/k_means_cpu.cu.s
+.PHONY : src/k_means_cpu.s
 
 # target to generate assembly for a file
-kernal.cu.s:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/mainCudaApp.dir/build.make CMakeFiles/mainCudaApp.dir/kernal.cu.s
-.PHONY : kernal.cu.s
+src/k_means_cpu.cu.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/mainCudaApp.dir/build.make CMakeFiles/mainCudaApp.dir/src/k_means_cpu.cu.s
+.PHONY : src/k_means_cpu.cu.s
+
+src/kernel.o: src/kernel.cu.o
+.PHONY : src/kernel.o
+
+# target to build an object file
+src/kernel.cu.o:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/mainCudaApp.dir/build.make CMakeFiles/mainCudaApp.dir/src/kernel.cu.o
+.PHONY : src/kernel.cu.o
+
+src/kernel.i: src/kernel.cu.i
+.PHONY : src/kernel.i
+
+# target to preprocess a source file
+src/kernel.cu.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/mainCudaApp.dir/build.make CMakeFiles/mainCudaApp.dir/src/kernel.cu.i
+.PHONY : src/kernel.cu.i
+
+src/kernel.s: src/kernel.cu.s
+.PHONY : src/kernel.s
+
+# target to generate assembly for a file
+src/kernel.cu.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/mainCudaApp.dir/build.make CMakeFiles/mainCudaApp.dir/src/kernel.cu.s
+.PHONY : src/kernel.cu.s
+
+src/pt.o: src/pt.cu.o
+.PHONY : src/pt.o
+
+# target to build an object file
+src/pt.cu.o:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/mainCudaApp.dir/build.make CMakeFiles/mainCudaApp.dir/src/pt.cu.o
+.PHONY : src/pt.cu.o
+
+src/pt.i: src/pt.cu.i
+.PHONY : src/pt.i
+
+# target to preprocess a source file
+src/pt.cu.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/mainCudaApp.dir/build.make CMakeFiles/mainCudaApp.dir/src/pt.cu.i
+.PHONY : src/pt.cu.i
+
+src/pt.s: src/pt.cu.s
+.PHONY : src/pt.s
+
+# target to generate assembly for a file
+src/pt.cu.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/mainCudaApp.dir/build.make CMakeFiles/mainCudaApp.dir/src/pt.cu.s
+.PHONY : src/pt.cu.s
 
 # Help Target
 help:
@@ -162,9 +210,15 @@ help:
 	@echo "... edit_cache"
 	@echo "... rebuild_cache"
 	@echo "... mainCudaApp"
-	@echo "... kernal.o"
-	@echo "... kernal.i"
-	@echo "... kernal.s"
+	@echo "... src/k_means_cpu.o"
+	@echo "... src/k_means_cpu.i"
+	@echo "... src/k_means_cpu.s"
+	@echo "... src/kernel.o"
+	@echo "... src/kernel.i"
+	@echo "... src/kernel.s"
+	@echo "... src/pt.o"
+	@echo "... src/pt.i"
+	@echo "... src/pt.s"
 .PHONY : help
 
 

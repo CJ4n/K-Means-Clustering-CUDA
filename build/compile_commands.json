@@ -1,7 +1,0 @@
-[
-{
-  "directory": "/home/jan/Desktop/K-Means-Clustering-CUDA/build",
-  "command": "/usr/bin/nvcc -forward-unknown-to-host-compiler   -g -x cu -c /home/jan/Desktop/K-Means-Clustering-CUDA/kernal.cu -o CMakeFiles/mainCudaApp.dir/kernal.cu.o",
-  "file": "/home/jan/Desktop/K-Means-Clustering-CUDA/kernal.cu"
-}
-]

@@ -7,18 +7,23 @@
 # endif()
 # set_property(TARGET cudaaa PROPERTY CUDA_ARCHITECTURES all-major)
 # add_executable ( cuda123 kernelv2lab.cu)
+set(CMAKE_C_COMPILER /usr/bin/gcc-9)
+set(CMAKE_CXX_COMPILER /usr/bin/g++-9)
 
 set(APP_NAME mainCudaApp)
 cmake_minimum_required(VERSION 3.16)
-project(CudaApp LANGUAGES CXX CUDA)
+include_directories(include) 
 
+# find_package(Thrust REQUIRED)
+# thrust_create_target(Thrust)
+project(CudaApp LANGUAGES CXX CUDA)
 # Locate sources and headers for this project
 # include_directories(${PROJECT_SOURCE_DIR} ${PROJECT_SOURCE_DIR}/include /usr/local/cuda/include )
 
 # file(GLOB sources ${PROJECT_SOURCE_DIR}/*.cc ${PROJECT_SOURCE_DIR}/src/*.cc)
 # file(GLOB headers ${PROJECT_SOURCE_DIR}/*.h ${PROJECT_SOURCE_DIR}/include/*.h)
 # file(GLOB cuda_sources ${PROJECT_SOURCE_DIR}/src/*.cu)
-file(GLOB cuda_sources *.cu)
+file(GLOB cuda_sources src/*.cu)
 
 # Add the executable, and link 
 # add_executable(myTarget ${sources} ${cuda_sources} ${headers})
