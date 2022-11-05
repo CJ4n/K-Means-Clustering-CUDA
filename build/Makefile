@@ -129,29 +129,29 @@ mainCudaApp/fast:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/mainCudaApp.dir/build.make CMakeFiles/mainCudaApp.dir/build
 .PHONY : mainCudaApp/fast
 
-kernal.o: kernal.cpp.o
+kernal.o: kernal.cu.o
 .PHONY : kernal.o
 
 # target to build an object file
-kernal.cpp.o:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/mainCudaApp.dir/build.make CMakeFiles/mainCudaApp.dir/kernal.cpp.o
-.PHONY : kernal.cpp.o
+kernal.cu.o:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/mainCudaApp.dir/build.make CMakeFiles/mainCudaApp.dir/kernal.cu.o
+.PHONY : kernal.cu.o
 
-kernal.i: kernal.cpp.i
+kernal.i: kernal.cu.i
 .PHONY : kernal.i
 
 # target to preprocess a source file
-kernal.cpp.i:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/mainCudaApp.dir/build.make CMakeFiles/mainCudaApp.dir/kernal.cpp.i
-.PHONY : kernal.cpp.i
+kernal.cu.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/mainCudaApp.dir/build.make CMakeFiles/mainCudaApp.dir/kernal.cu.i
+.PHONY : kernal.cu.i
 
-kernal.s: kernal.cpp.s
+kernal.s: kernal.cu.s
 .PHONY : kernal.s
 
 # target to generate assembly for a file
-kernal.cpp.s:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/mainCudaApp.dir/build.make CMakeFiles/mainCudaApp.dir/kernal.cpp.s
-.PHONY : kernal.cpp.s
+kernal.cu.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/mainCudaApp.dir/build.make CMakeFiles/mainCudaApp.dir/kernal.cu.s
+.PHONY : kernal.cu.s
 
 # Help Target
 help:

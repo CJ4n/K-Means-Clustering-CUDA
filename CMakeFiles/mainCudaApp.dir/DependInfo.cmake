@@ -8,7 +8,7 @@ set(CMAKE_DEPENDS_LANGUAGES
 
 # The set of dependency files which are needed:
 set(CMAKE_DEPENDS_DEPENDENCY_FILES
-  "/home/jan/Desktop/K-Means-Clustering-CUDA/kernal.cpp" "CMakeFiles/mainCudaApp.dir/kernal.cpp.o" "gcc" "CMakeFiles/mainCudaApp.dir/kernal.cpp.o.d"
+  "/home/jan/Desktop/K-Means-Clustering-CUDA/kernal.cu" "CMakeFiles/mainCudaApp.dir/kernal.cu.o" "gcc" "CMakeFiles/mainCudaApp.dir/kernal.cu.o.d"
   )
 
 # Targets to which this target links.

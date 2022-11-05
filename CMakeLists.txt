@@ -18,7 +18,7 @@ project(CudaApp LANGUAGES CXX CUDA)
 # file(GLOB sources ${PROJECT_SOURCE_DIR}/*.cc ${PROJECT_SOURCE_DIR}/src/*.cc)
 # file(GLOB headers ${PROJECT_SOURCE_DIR}/*.h ${PROJECT_SOURCE_DIR}/include/*.h)
 # file(GLOB cuda_sources ${PROJECT_SOURCE_DIR}/src/*.cu)
-file(GLOB cuda_sources *.cpp)
+file(GLOB cuda_sources *.cu)
 
 # Add the executable, and link 
 # add_executable(myTarget ${sources} ${cuda_sources} ${headers})
