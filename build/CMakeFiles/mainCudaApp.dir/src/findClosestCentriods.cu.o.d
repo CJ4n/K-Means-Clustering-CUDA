@@ -1,4 +1,4 @@
-CMakeFiles/mainCudaApp.dir/src/k_means_cpu.cu.o : /home/jan/Desktop/K-Means-Clustering-CUDA/src/k_means_cpu.cu \
+CMakeFiles/mainCudaApp.dir/src/findClosestCentriods.cu.o : /home/jan/Desktop/K-Means-Clustering-CUDA/src/findClosestCentriods.cu \
     /usr/include/stdc-predef.h \
     /usr/include/cuda_runtime.h \
     /usr/include/crt/host_config.h \
@@ -156,4 +156,75 @@ CMakeFiles/mainCudaApp.dir/src/k_means_cpu.cu.o : /home/jan/Desktop/K-Means-Clus
     /usr/include/texture_fetch_functions.h \
     /usr/include/texture_indirect_functions.h \
     /usr/include/surface_indirect_functions.h \
-    /usr/include/device_launch_parameters.h
+    /usr/include/device_launch_parameters.h \
+    /home/jan/Desktop/K-Means-Clustering-CUDA/include/findClosestCentriods.h \
+    /usr/include/cuda.h \
+    /usr/lib/gcc/x86_64-linux-gnu/9/include/stdint.h \
+    /usr/include/stdint.h \
+    /usr/include/x86_64-linux-gnu/bits/wchar.h \
+    /usr/include/x86_64-linux-gnu/bits/stdint-uintn.h \
+    /home/jan/Desktop/K-Means-Clustering-CUDA/include/dataPoints.h \
+    /usr/include/c++/9/string \
+    /usr/include/c++/9/bits/stringfwd.h \
+    /usr/include/c++/9/bits/memoryfwd.h \
+    /usr/include/c++/9/bits/char_traits.h \
+    /usr/include/c++/9/bits/stl_algobase.h \
+    /usr/include/c++/9/bits/functexcept.h \
+    /usr/include/c++/9/ext/numeric_traits.h \
+    /usr/include/c++/9/bits/stl_pair.h \
+    /usr/include/c++/9/bits/stl_iterator_base_types.h \
+    /usr/include/c++/9/bits/stl_iterator_base_funcs.h \
+    /usr/include/c++/9/debug/assertions.h \
+    /usr/include/c++/9/bits/stl_iterator.h \
+    /usr/include/c++/9/bits/ptr_traits.h \
+    /usr/include/c++/9/debug/debug.h \
+    /usr/include/c++/9/bits/predefined_ops.h \
+    /usr/include/c++/9/bits/postypes.h \
+    /usr/include/c++/9/cwchar \
+    /usr/include/wchar.h \
+    /usr/include/x86_64-linux-gnu/bits/types/wint_t.h \
+    /usr/include/x86_64-linux-gnu/bits/types/mbstate_t.h \
+    /usr/include/c++/9/cstdint \
+    /usr/include/c++/9/bits/allocator.h \
+    /usr/include/x86_64-linux-gnu/c++/9/bits/c++allocator.h \
+    /usr/include/c++/9/ext/new_allocator.h \
+    /usr/include/c++/9/bits/localefwd.h \
+    /usr/include/x86_64-linux-gnu/c++/9/bits/c++locale.h \
+    /usr/include/c++/9/clocale \
+    /usr/include/locale.h \
+    /usr/include/x86_64-linux-gnu/bits/locale.h \
+    /usr/include/c++/9/iosfwd \
+    /usr/include/c++/9/cctype \
+    /usr/include/ctype.h \
+    /usr/include/c++/9/bits/ostream_insert.h \
+    /usr/include/c++/9/bits/cxxabi_forced.h \
+    /usr/include/c++/9/bits/stl_function.h \
+    /usr/include/c++/9/backward/binders.h \
+    /usr/include/c++/9/bits/range_access.h \
+    /usr/include/c++/9/initializer_list \
+    /usr/include/c++/9/bits/basic_string.h \
+    /usr/include/c++/9/ext/atomicity.h \
+    /usr/include/x86_64-linux-gnu/c++/9/bits/gthr.h \
+    /usr/include/x86_64-linux-gnu/c++/9/bits/gthr-default.h \
+    /usr/include/pthread.h \
+    /usr/include/sched.h \
+    /usr/include/x86_64-linux-gnu/bits/sched.h \
+    /usr/include/x86_64-linux-gnu/bits/types/struct_sched_param.h \
+    /usr/include/x86_64-linux-gnu/bits/cpu-set.h \
+    /usr/include/x86_64-linux-gnu/bits/setjmp.h \
+    /usr/include/x86_64-linux-gnu/bits/types/struct___jmp_buf_tag.h \
+    /usr/include/x86_64-linux-gnu/c++/9/bits/atomic_word.h \
+    /usr/include/c++/9/ext/alloc_traits.h \
+    /usr/include/c++/9/bits/alloc_traits.h \
+    /usr/include/c++/9/ext/string_conversions.h \
+    /usr/include/c++/9/cstdio \
+    /usr/include/c++/9/cerrno \
+    /usr/include/errno.h \
+    /usr/include/x86_64-linux-gnu/bits/errno.h \
+    /usr/include/linux/errno.h \
+    /usr/include/x86_64-linux-gnu/asm/errno.h \
+    /usr/include/asm-generic/errno.h \
+    /usr/include/asm-generic/errno-base.h \
+    /usr/include/x86_64-linux-gnu/bits/types/error_t.h \
+    /usr/include/c++/9/bits/functional_hash.h \
+    /usr/include/c++/9/bits/basic_string.tcc

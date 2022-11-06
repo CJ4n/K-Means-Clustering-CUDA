@@ -83,10 +83,24 @@ CMakeFiles/mainCudaApp.dir/src/dataPoints.cu.s: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Compiling CUDA source to assembly CMakeFiles/mainCudaApp.dir/src/dataPoints.cu.s"
 	$(CMAKE_COMMAND) -E cmake_unimplemented_variable CMAKE_CUDA_CREATE_ASSEMBLY_SOURCE
 
+CMakeFiles/mainCudaApp.dir/src/findClosestCentriods.cu.o: CMakeFiles/mainCudaApp.dir/flags.make
+CMakeFiles/mainCudaApp.dir/src/findClosestCentriods.cu.o: ../src/findClosestCentriods.cu
+CMakeFiles/mainCudaApp.dir/src/findClosestCentriods.cu.o: CMakeFiles/mainCudaApp.dir/compiler_depend.ts
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/home/jan/Desktop/K-Means-Clustering-CUDA/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_2) "Building CUDA object CMakeFiles/mainCudaApp.dir/src/findClosestCentriods.cu.o"
+	/usr/bin/nvcc -forward-unknown-to-host-compiler $(CUDA_DEFINES) $(CUDA_INCLUDES) $(CUDA_FLAGS) -MD -MT CMakeFiles/mainCudaApp.dir/src/findClosestCentriods.cu.o -MF CMakeFiles/mainCudaApp.dir/src/findClosestCentriods.cu.o.d -x cu -c /home/jan/Desktop/K-Means-Clustering-CUDA/src/findClosestCentriods.cu -o CMakeFiles/mainCudaApp.dir/src/findClosestCentriods.cu.o
+
+CMakeFiles/mainCudaApp.dir/src/findClosestCentriods.cu.i: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Preprocessing CUDA source to CMakeFiles/mainCudaApp.dir/src/findClosestCentriods.cu.i"
+	$(CMAKE_COMMAND) -E cmake_unimplemented_variable CMAKE_CUDA_CREATE_PREPROCESSED_SOURCE
+
+CMakeFiles/mainCudaApp.dir/src/findClosestCentriods.cu.s: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Compiling CUDA source to assembly CMakeFiles/mainCudaApp.dir/src/findClosestCentriods.cu.s"
+	$(CMAKE_COMMAND) -E cmake_unimplemented_variable CMAKE_CUDA_CREATE_ASSEMBLY_SOURCE
+
 CMakeFiles/mainCudaApp.dir/src/kMeansCpu.cu.o: CMakeFiles/mainCudaApp.dir/flags.make
 CMakeFiles/mainCudaApp.dir/src/kMeansCpu.cu.o: ../src/kMeansCpu.cu
 CMakeFiles/mainCudaApp.dir/src/kMeansCpu.cu.o: CMakeFiles/mainCudaApp.dir/compiler_depend.ts
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/home/jan/Desktop/K-Means-Clustering-CUDA/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_2) "Building CUDA object CMakeFiles/mainCudaApp.dir/src/kMeansCpu.cu.o"
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/home/jan/Desktop/K-Means-Clustering-CUDA/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_3) "Building CUDA object CMakeFiles/mainCudaApp.dir/src/kMeansCpu.cu.o"
 	/usr/bin/nvcc -forward-unknown-to-host-compiler $(CUDA_DEFINES) $(CUDA_INCLUDES) $(CUDA_FLAGS) -MD -MT CMakeFiles/mainCudaApp.dir/src/kMeansCpu.cu.o -MF CMakeFiles/mainCudaApp.dir/src/kMeansCpu.cu.o.d -x cu -c /home/jan/Desktop/K-Means-Clustering-CUDA/src/kMeansCpu.cu -o CMakeFiles/mainCudaApp.dir/src/kMeansCpu.cu.o
 
 CMakeFiles/mainCudaApp.dir/src/kMeansCpu.cu.i: cmake_force
@@ -97,10 +111,24 @@ CMakeFiles/mainCudaApp.dir/src/kMeansCpu.cu.s: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Compiling CUDA source to assembly CMakeFiles/mainCudaApp.dir/src/kMeansCpu.cu.s"
 	$(CMAKE_COMMAND) -E cmake_unimplemented_variable CMAKE_CUDA_CREATE_ASSEMBLY_SOURCE
 
+CMakeFiles/mainCudaApp.dir/src/kMeansGpuThrust.cu.o: CMakeFiles/mainCudaApp.dir/flags.make
+CMakeFiles/mainCudaApp.dir/src/kMeansGpuThrust.cu.o: ../src/kMeansGpuThrust.cu
+CMakeFiles/mainCudaApp.dir/src/kMeansGpuThrust.cu.o: CMakeFiles/mainCudaApp.dir/compiler_depend.ts
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/home/jan/Desktop/K-Means-Clustering-CUDA/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_4) "Building CUDA object CMakeFiles/mainCudaApp.dir/src/kMeansGpuThrust.cu.o"
+	/usr/bin/nvcc -forward-unknown-to-host-compiler $(CUDA_DEFINES) $(CUDA_INCLUDES) $(CUDA_FLAGS) -MD -MT CMakeFiles/mainCudaApp.dir/src/kMeansGpuThrust.cu.o -MF CMakeFiles/mainCudaApp.dir/src/kMeansGpuThrust.cu.o.d -x cu -c /home/jan/Desktop/K-Means-Clustering-CUDA/src/kMeansGpuThrust.cu -o CMakeFiles/mainCudaApp.dir/src/kMeansGpuThrust.cu.o
+
+CMakeFiles/mainCudaApp.dir/src/kMeansGpuThrust.cu.i: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Preprocessing CUDA source to CMakeFiles/mainCudaApp.dir/src/kMeansGpuThrust.cu.i"
+	$(CMAKE_COMMAND) -E cmake_unimplemented_variable CMAKE_CUDA_CREATE_PREPROCESSED_SOURCE
+
+CMakeFiles/mainCudaApp.dir/src/kMeansGpuThrust.cu.s: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Compiling CUDA source to assembly CMakeFiles/mainCudaApp.dir/src/kMeansGpuThrust.cu.s"
+	$(CMAKE_COMMAND) -E cmake_unimplemented_variable CMAKE_CUDA_CREATE_ASSEMBLY_SOURCE
+
 CMakeFiles/mainCudaApp.dir/src/kernel.cu.o: CMakeFiles/mainCudaApp.dir/flags.make
 CMakeFiles/mainCudaApp.dir/src/kernel.cu.o: ../src/kernel.cu
 CMakeFiles/mainCudaApp.dir/src/kernel.cu.o: CMakeFiles/mainCudaApp.dir/compiler_depend.ts
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/home/jan/Desktop/K-Means-Clustering-CUDA/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_3) "Building CUDA object CMakeFiles/mainCudaApp.dir/src/kernel.cu.o"
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/home/jan/Desktop/K-Means-Clustering-CUDA/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_5) "Building CUDA object CMakeFiles/mainCudaApp.dir/src/kernel.cu.o"
 	/usr/bin/nvcc -forward-unknown-to-host-compiler $(CUDA_DEFINES) $(CUDA_INCLUDES) $(CUDA_FLAGS) -MD -MT CMakeFiles/mainCudaApp.dir/src/kernel.cu.o -MF CMakeFiles/mainCudaApp.dir/src/kernel.cu.o.d -x cu -c /home/jan/Desktop/K-Means-Clustering-CUDA/src/kernel.cu -o CMakeFiles/mainCudaApp.dir/src/kernel.cu.o
 
 CMakeFiles/mainCudaApp.dir/src/kernel.cu.i: cmake_force
@@ -114,18 +142,22 @@ CMakeFiles/mainCudaApp.dir/src/kernel.cu.s: cmake_force
 # Object files for target mainCudaApp
 mainCudaApp_OBJECTS = \
 "CMakeFiles/mainCudaApp.dir/src/dataPoints.cu.o" \
+"CMakeFiles/mainCudaApp.dir/src/findClosestCentriods.cu.o" \
 "CMakeFiles/mainCudaApp.dir/src/kMeansCpu.cu.o" \
+"CMakeFiles/mainCudaApp.dir/src/kMeansGpuThrust.cu.o" \
 "CMakeFiles/mainCudaApp.dir/src/kernel.cu.o"
 
 # External object files for target mainCudaApp
 mainCudaApp_EXTERNAL_OBJECTS =
 
 mainCudaApp: CMakeFiles/mainCudaApp.dir/src/dataPoints.cu.o
+mainCudaApp: CMakeFiles/mainCudaApp.dir/src/findClosestCentriods.cu.o
 mainCudaApp: CMakeFiles/mainCudaApp.dir/src/kMeansCpu.cu.o
+mainCudaApp: CMakeFiles/mainCudaApp.dir/src/kMeansGpuThrust.cu.o
 mainCudaApp: CMakeFiles/mainCudaApp.dir/src/kernel.cu.o
 mainCudaApp: CMakeFiles/mainCudaApp.dir/build.make
 mainCudaApp: CMakeFiles/mainCudaApp.dir/link.txt
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --bold --progress-dir=/home/jan/Desktop/K-Means-Clustering-CUDA/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_4) "Linking CUDA executable mainCudaApp"
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --bold --progress-dir=/home/jan/Desktop/K-Means-Clustering-CUDA/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_6) "Linking CUDA executable mainCudaApp"
 	$(CMAKE_COMMAND) -E cmake_link_script CMakeFiles/mainCudaApp.dir/link.txt --verbose=$(VERBOSE)
 
 # Rule to build all files generated by this target.

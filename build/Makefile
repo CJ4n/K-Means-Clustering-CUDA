@@ -153,6 +153,30 @@ src/dataPoints.cu.s:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/mainCudaApp.dir/build.make CMakeFiles/mainCudaApp.dir/src/dataPoints.cu.s
 .PHONY : src/dataPoints.cu.s
 
+src/findClosestCentriods.o: src/findClosestCentriods.cu.o
+.PHONY : src/findClosestCentriods.o
+
+# target to build an object file
+src/findClosestCentriods.cu.o:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/mainCudaApp.dir/build.make CMakeFiles/mainCudaApp.dir/src/findClosestCentriods.cu.o
+.PHONY : src/findClosestCentriods.cu.o
+
+src/findClosestCentriods.i: src/findClosestCentriods.cu.i
+.PHONY : src/findClosestCentriods.i
+
+# target to preprocess a source file
+src/findClosestCentriods.cu.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/mainCudaApp.dir/build.make CMakeFiles/mainCudaApp.dir/src/findClosestCentriods.cu.i
+.PHONY : src/findClosestCentriods.cu.i
+
+src/findClosestCentriods.s: src/findClosestCentriods.cu.s
+.PHONY : src/findClosestCentriods.s
+
+# target to generate assembly for a file
+src/findClosestCentriods.cu.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/mainCudaApp.dir/build.make CMakeFiles/mainCudaApp.dir/src/findClosestCentriods.cu.s
+.PHONY : src/findClosestCentriods.cu.s
+
 src/kMeansCpu.o: src/kMeansCpu.cu.o
 .PHONY : src/kMeansCpu.o
 
@@ -176,6 +200,30 @@ src/kMeansCpu.s: src/kMeansCpu.cu.s
 src/kMeansCpu.cu.s:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/mainCudaApp.dir/build.make CMakeFiles/mainCudaApp.dir/src/kMeansCpu.cu.s
 .PHONY : src/kMeansCpu.cu.s
+
+src/kMeansGpuThrust.o: src/kMeansGpuThrust.cu.o
+.PHONY : src/kMeansGpuThrust.o
+
+# target to build an object file
+src/kMeansGpuThrust.cu.o:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/mainCudaApp.dir/build.make CMakeFiles/mainCudaApp.dir/src/kMeansGpuThrust.cu.o
+.PHONY : src/kMeansGpuThrust.cu.o
+
+src/kMeansGpuThrust.i: src/kMeansGpuThrust.cu.i
+.PHONY : src/kMeansGpuThrust.i
+
+# target to preprocess a source file
+src/kMeansGpuThrust.cu.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/mainCudaApp.dir/build.make CMakeFiles/mainCudaApp.dir/src/kMeansGpuThrust.cu.i
+.PHONY : src/kMeansGpuThrust.cu.i
+
+src/kMeansGpuThrust.s: src/kMeansGpuThrust.cu.s
+.PHONY : src/kMeansGpuThrust.s
+
+# target to generate assembly for a file
+src/kMeansGpuThrust.cu.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/mainCudaApp.dir/build.make CMakeFiles/mainCudaApp.dir/src/kMeansGpuThrust.cu.s
+.PHONY : src/kMeansGpuThrust.cu.s
 
 src/kernel.o: src/kernel.cu.o
 .PHONY : src/kernel.o
@@ -213,9 +261,15 @@ help:
 	@echo "... src/dataPoints.o"
 	@echo "... src/dataPoints.i"
 	@echo "... src/dataPoints.s"
+	@echo "... src/findClosestCentriods.o"
+	@echo "... src/findClosestCentriods.i"
+	@echo "... src/findClosestCentriods.s"
 	@echo "... src/kMeansCpu.o"
 	@echo "... src/kMeansCpu.i"
 	@echo "... src/kMeansCpu.s"
+	@echo "... src/kMeansGpuThrust.o"
+	@echo "... src/kMeansGpuThrust.i"
+	@echo "... src/kMeansGpuThrust.s"
 	@echo "... src/kernel.o"
 	@echo "... src/kernel.i"
 	@echo "... src/kernel.s"

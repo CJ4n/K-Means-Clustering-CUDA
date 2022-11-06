@@ -1,6 +1,8 @@
+#include "kMeansCpu.h"
+// #pragma once
+
 #include "vector"
 #include "string"
-#include "kMeansCpu.h"
 
 void k_means_one_iteration_cpu(dataPoints *points, dataPoints *centroids)
 {
