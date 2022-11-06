@@ -1,8 +1,8 @@
 #include "kMeansGpuThrust.h"
 
 #include <iostream>
-#include <thrust/device_vector.h>
 #include <thrust/reduce.h>
+#include <thrust/device_vector.h>
 #include "cudaCheckError.h"
 
 #include "findClosestCentriods.h"
