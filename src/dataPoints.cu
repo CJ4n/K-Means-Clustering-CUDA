@@ -1,20 +1,12 @@
-#pragma once
+
+
 #include <cuda.h>
 #include <fstream>	// for file-reading
 #include <iostream> // for file-reading
 #include <sstream>	// for file-reading
 #include <vector>
 #include <dataPoints.h>
-
-#define cudaCheckError()                                                                    \
-	{                                                                                       \
-		cudaError_t e = cudaGetLastError();                                                 \
-		if (e != cudaSuccess)                                                               \
-		{                                                                                   \
-			printf("Cudafailure %s:%d: '%s'\n", __FILE__, __LINE__, cudaGetErrorString(e)); \
-			exit(0);                                                                        \
-		}                                                                                   \
-	}
+#include "cudaCheckError.h"
 
 
 dataPoints *allocate_pt(int num_features, int num_data_points)
@@ -40,6 +32,26 @@ dataPoints *allocate_pt(int num_features, int num_data_points)
 		cudaCheckError();
 	}
 	return point;
+}
+
+double distance(dataPoints *p1, dataPoints *p2, int point_id, int cluster_id)
+{
+	double error = 0;
+	for (int feature = 0; feature < p2->num_features; ++feature)
+	{
+		error += (p1->features_array[feature][cluster_id] - p2->features_array[feature][point_id]) * (p1->features_array[feature][cluster_id] - p2->features_array[feature][point_id]);
+	}
+	return error;
+}
+
+double MeanSquareError(dataPoints *point, dataPoints *centroid)
+{
+	double error = 0;
+	for (int i = 0; i < point->num_data_points; ++i)
+	{
+		error += distance(centroid, point, i, point->cluster_id_of_point[i]);
+	}
+	return error / point->num_data_points;
 }
 
 dataPoints *readCsv()
