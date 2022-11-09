@@ -27,13 +27,13 @@ DataPoints *AllocateDataPoints(int num_features, int num_data_points)
 
 	for (int feature = 0; feature < point->num_features; ++feature)
 	{
-		cudaMallocManaged(&(point->features_array[feature]), sizeof(double) * point->num_data_points);
+		cudaMallocManaged(&(point->features_array[feature]), sizeof(*(point->features_array[feature])) * point->num_data_points);
 		cudaCheckError();
 	}
 	return point;
 }
 
-DataPoints *DeallocateDataPoints(DataPoints *data_points )
+void DeallocateDataPoints(DataPoints *data_points )
 {
 	for (int f = 0; f < data_points->num_features; f++)
 	{
@@ -106,7 +106,7 @@ DataPoints *ReadCsv()
 void SaveCsv(DataPoints *point, std::string file_name)
 {
 	std::ofstream myfile;
-	// std::remove(file_name.c_str());
+	std::remove(file_name.c_str());
 	myfile.open(file_name);
 	myfile << "x,y,c" << std::endl;
 

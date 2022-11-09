@@ -33,7 +33,7 @@ struct DataPoints
 };
 
 DataPoints *AllocateDataPoints(int num_features, int num_data_points);
-DataPoints *DeallocateDataPoints(DataPoints* data_points);
+void DeallocateDataPoints(DataPoints* data_points);
 double Distance(DataPoints *p1, DataPoints *p2, int point_id, int cluster_id);
 double MeanSquareError(DataPoints *point, DataPoints *centroid);
 DataPoints *ReadCsv();

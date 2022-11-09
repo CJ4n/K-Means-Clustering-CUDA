@@ -18,11 +18,14 @@
 #include "cudaCheckError.h"
 #include "kMeansCpu.h"
 #include "kMeansGpuThrust.h"
+#include "kMeansGpu.h"
+#include "GeneratePoints.h"
 
-void kMeansClustering(DataPoints *point, int epochs, int num_clusters, void (*k_means_one_iteration_algorithm)(DataPoints *, DataPoints *))
+#define DEBUG 0
+#define RANDOM_CENTROID_INITIALIZATION 0
+
+DataPoints *GetCentroids(DataPoints *point, int num_clusters)
 {
-	std::srand(0); // need to set the random seed
-
 	DataPoints *centroids = AllocateDataPoints(point->num_features, num_clusters);
 
 	for (int i = 0; i < num_clusters; ++i)
@@ -35,46 +38,60 @@ void kMeansClustering(DataPoints *point, int epochs, int num_clusters, void (*k_
 
 		centroids->cluster_id_of_point[i] = i;
 	}
-	centroids->num_data_points = num_clusters;
+	return centroids;
+}
 
-	// alloc cuda memory
+void kMeansClustering(DataPoints *point, int epochs, int num_clusters, void (*k_means_one_iteration_algorithm)(DataPoints *, DataPoints *))
+{
+	DataPoints *centroids = GetCentroids(point, num_clusters);
 
 	for (int epoch = 0; epoch < epochs; ++epoch)
 	{
 		// saveCsv(point, "train" + std::to_string(epoch) + ".csv");
-		// std::cout << "START EPOCH " << epoch << std::endl;
+		if (DEBUG)
+		{
+			std::cout << "START EPOCH " << epoch << std::endl;
+		}
 		k_means_one_iteration_algorithm(point, centroids);
-		// std::cout << "epoch: " << epoch << " Error: " << MeanSquareError(point, centroids) << std::endl;
-		// for (int feature = 0; feature < point->num_features; ++feature)
-		// {
-		// 	std::cout << "feature: " << feature << " |";
-		// 	for (int c = 0; c < centroids->num_data_points; ++c)
-		// 	{
-		// 		std::cout << centroids->features_array[feature][c] << ", ";
-		// 	}
-		// 	std::cout << std::endl;
-		// }
-		// std::cout << std::endl;
+		std::cout << "epoch: " << epoch << " Error: " << MeanSquareError(point, centroids) << std::endl;
+		if (DEBUG)
+		{
+			for (int feature = 0; feature < point->num_features; ++feature)
+			{
+				std::cout << "feature: " << feature << " |";
+				for (int c = 0; c < centroids->num_data_points; ++c)
+				{
+					std::cout << centroids->features_array[feature][c] << ", ";
+				}
+				std::cout << std::endl;
+			}
+			std::cout << std::endl;
+		}
 	}
 	DeallocateDataPoints(centroids);
 }
+
+void RunKMeansClustering(void (*k_means_one_iteration_algorithm)(DataPoints *, DataPoints *), std::string alg_name, int num_features, int num_points, int num_cluster, int num_epochs)
+{
+	std::srand(0);
+	DataPoints *point = GeneratePoints(num_features, num_points);
+	std::cout << "----------" + alg_name + "----------\n";
+	kMeansClustering(point, num_epochs, num_cluster, k_means_one_iteration_algorithm);
+	SaveCsv(point, "Output" + alg_name + ".csv");
+	// DeallocateDataPoints(point);
+}
+
 int main(int argc, char **argv)
 {
-	DataPoints *point = ReadCsv();
-	// std::srand(time(0)); // need to set the random seed
-	// std::srand(0); // need to set the random seed
-
-	kMeansClustering(point, 5, 5, KMeansOneIterationGpuThurst);
-	SaveCsv(point, "outputthurst.csv");
-
+	int num_features = 2;
+	int num_points = 1000000;
+	int num_cluster = 5;
+	int num_epoches = 10;
+	RunKMeansClustering(KMeansOneIterationGpuThurst, "THRUST", num_features, num_points, num_cluster, num_epoches);
+	RunKMeansClustering(KMeansOneIterationCpu, "CPU", num_features, num_points, num_cluster, num_epoches);
+	// RunKMeansClustering(KMeansOneIterationGpu, "GPU", num_features, num_points, num_cluster, num_epoches);
+	DataPoints *point = GeneratePoints(num_features, num_points);
+	SaveCsv(point, "Input.csv");
 	DeallocateDataPoints(point);
-
-	std::cout << "----------CPUUUUUUUUUU------\n";
-	point = ReadCsv();
-	kMeansClustering(point, 5, 5, KMeansOneIterationCpu);
-
-	SaveCsv(point, "outputcpu.csv");
-	DeallocateDataPoints(point);
-
 	return 0;
 }

@@ -25,7 +25,8 @@ __global__ void FindClosestCentroids(DataPoints *points, DataPoints *centroids)
 			points->cluster_id_of_point[gid] = c;
 		}
 	}
-	if(points->num_data_points<gid){
-		points->minDist_to_cluster[gid]=__DBL_MAX__;
+	if (points->num_data_points > gid)
+	{
+		points->minDist_to_cluster[gid] = __DBL_MAX__;
 	}
 }
