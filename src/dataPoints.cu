@@ -8,12 +8,11 @@
 #include <dataPoints.h>
 #include "cudaCheckError.h"
 
-
-dataPoints *allocate_pt(int num_features, int num_data_points)
+DataPoints *AllocateDataPoints(int num_features, int num_data_points)
 {
 
-	dataPoints *point;
-	cudaMallocManaged(&point, sizeof(dataPoints));
+	DataPoints *point;
+	cudaMallocManaged(&point, sizeof(DataPoints));
 	cudaCheckError();
 
 	point->num_data_points = num_data_points;
@@ -34,7 +33,19 @@ dataPoints *allocate_pt(int num_features, int num_data_points)
 	return point;
 }
 
-double distance(dataPoints *p1, dataPoints *p2, int point_id, int cluster_id)
+DataPoints *DeallocateDataPoints(DataPoints *data_points )
+{
+	for (int f = 0; f < data_points->num_features; f++)
+	{
+		cudaFree(data_points->features_array[f]);
+	}
+	cudaFree(data_points->features_array);
+	cudaFree(data_points->cluster_id_of_point);
+	cudaFree(data_points->minDist_to_cluster);
+	cudaFree(data_points);
+}
+
+double Distance(DataPoints *p1, DataPoints *p2, int point_id, int cluster_id)
 {
 	double error = 0;
 	for (int feature = 0; feature < p2->num_features; ++feature)
@@ -44,17 +55,17 @@ double distance(dataPoints *p1, dataPoints *p2, int point_id, int cluster_id)
 	return error;
 }
 
-double MeanSquareError(dataPoints *point, dataPoints *centroid)
+double MeanSquareError(DataPoints *point, DataPoints *centroid)
 {
 	double error = 0;
 	for (int i = 0; i < point->num_data_points; ++i)
 	{
-		error += distance(centroid, point, i, point->cluster_id_of_point[i]);
+		error += Distance(centroid, point, i, point->cluster_id_of_point[i]);
 	}
 	return error / point->num_data_points;
 }
 
-dataPoints *readCsv()
+DataPoints *ReadCsv()
 {
 	std::vector<Point> points;
 	std::string line;
@@ -74,7 +85,7 @@ dataPoints *readCsv()
 	}
 	file.close();
 
-	dataPoints *point = allocate_pt(2, points.size());
+	DataPoints *point = AllocateDataPoints(2, points.size());
 	int i = 0;
 	for (std::vector<Point>::iterator it = points.begin(); it != points.end(); ++it)
 	{
@@ -92,10 +103,10 @@ dataPoints *readCsv()
 	return point;
 }
 
-void saveCsv(dataPoints *point, std::string file_name)
+void SaveCsv(DataPoints *point, std::string file_name)
 {
 	std::ofstream myfile;
-	std::remove(file_name.c_str());
+	// std::remove(file_name.c_str());
 	myfile.open(file_name);
 	myfile << "x,y,c" << std::endl;
 
@@ -109,5 +120,6 @@ void saveCsv(dataPoints *point, std::string file_name)
 
 		myfile << point->cluster_id_of_point[i] << std::endl;
 	}
+	
 	myfile.close();
 }

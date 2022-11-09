@@ -17,13 +17,13 @@ struct Point
 								cluster(-1),
 								minDist(__DBL_MAX__) {}
 
-	double distance(Point p)
-	{
-		return (p.x - x) * (p.x - x) + (p.y - y) * (p.y - y);
-	}
+	// double distance(Point p)
+	// {
+	// 	return (p.x - x) * (p.x - x) + (p.y - y) * (p.y - y);
+	// }
 };
 
-struct dataPoints
+struct DataPoints
 {
 	double **features_array;
 	int *cluster_id_of_point;
@@ -32,8 +32,9 @@ struct dataPoints
 	int num_features;
 };
 
-dataPoints *allocate_pt(int num_features, int num_data_points);
-double distance(dataPoints *p1, dataPoints *p2, int point_id, int cluster_id);
-double MeanSquareError(dataPoints *point, dataPoints *centroid);
-dataPoints *readCsv();
-void saveCsv(dataPoints *point, std::string file_name);
+DataPoints *AllocateDataPoints(int num_features, int num_data_points);
+DataPoints *DeallocateDataPoints(DataPoints* data_points);
+double Distance(DataPoints *p1, DataPoints *p2, int point_id, int cluster_id);
+double MeanSquareError(DataPoints *point, DataPoints *centroid);
+DataPoints *ReadCsv();
+void SaveCsv(DataPoints *point, std::string file_name);

@@ -2,4 +2,4 @@
 #include <cuda.h>
 #include "dataPoints.h"
 
-__global__ void find_closest_centroids(dataPoints *points, dataPoints *centroids);
+__global__ void FindClosestCentroids(DataPoints *points, DataPoints *centroids);

@@ -1,7 +1,7 @@
 
 #include "findClosestCentriods.h"
 
-__global__ void find_closest_centroids(dataPoints *points, dataPoints *centroids)
+__global__ void FindClosestCentroids(DataPoints *points, DataPoints *centroids)
 {
 	int tid = threadIdx.x;
 	int gid = blockIdx.x * blockDim.x + threadIdx.x;
@@ -12,7 +12,7 @@ __global__ void find_closest_centroids(dataPoints *points, dataPoints *centroids
 		{
 			return;
 		}
-		int dist = 0;
+		double dist = 0;
 		for (int feature = 0; feature < centroids->num_features; ++feature)
 		{
 			double tmp = points->features_array[feature][gid] - centroids->features_array[feature][c];
@@ -24,5 +24,8 @@ __global__ void find_closest_centroids(dataPoints *points, dataPoints *centroids
 			points->minDist_to_cluster[gid] = dist;
 			points->cluster_id_of_point[gid] = c;
 		}
+	}
+	if(points->num_data_points<gid){
+		points->minDist_to_cluster[gid]=__DBL_MAX__;
 	}
 }

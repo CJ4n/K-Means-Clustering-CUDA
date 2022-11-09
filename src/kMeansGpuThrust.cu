@@ -10,28 +10,27 @@
 #include "vector"
 #include "string"
 
-
-void k_means_one_iteration_gpu_thurst(dataPoints *points, dataPoints *centroids)
+void KMeansOneIterationGpuThurst(DataPoints *points, DataPoints *centroids)
 {
 	// init
 
-	int *nPoints = (int *)malloc(sizeof(int) * centroids->num_data_points);
-	double **sum = (double **)malloc(sizeof(double *) * centroids->num_features);
+	// int *nPoints = (int *)malloc(sizeof(int) * centroids->num_data_points);
+	// double **sum = (double **)malloc(sizeof(double *) * centroids->num_features);
 
-	for (int feature = 0; feature < points->num_features; ++feature)
-	{
-		sum[feature] = (double *)malloc(sizeof(double) * centroids->num_data_points);
-	}
-	for (int c = 0; c < centroids->num_data_points; ++c)
-	{
-		nPoints[c] = 0;
-		std::vector<double> tmp;
+	// for (int feature = 0; feature < points->num_features; ++feature)
+	// {
+	// 	sum[feature] = (double *)malloc(sizeof(double) * centroids->num_data_points);
+	// }
+	// for (int c = 0; c < centroids->num_data_points; ++c)
+	// {
+	// 	nPoints[c] = 0;
+	// 	std::vector<double> tmp;
 
-		for (int feature = 0; feature < points->num_features; ++feature)
-		{
-			sum[feature][c] = 0;
-		}
-	}
+	// 	for (int feature = 0; feature < points->num_features; ++feature)
+	// 	{
+	// 		sum[feature][c] = 0;
+	// 	}
+	// }
 
 	// init
 
@@ -41,51 +40,73 @@ void k_means_one_iteration_gpu_thurst(dataPoints *points, dataPoints *centroids)
 	int num_blocks = (int)std::max(std::ceil((int)(N / num_threads)), 1.0);
 	// size_t shmem_size = num_threads * sizeof(float);
 
-	find_closest_centroids<<<num_blocks, num_threads>>>(points, centroids);
+	FindClosestCentroids<<<num_blocks, num_threads>>>(points, centroids);
+
+	cudaCheckError();
 	cudaDeviceSynchronize();
-
 	cudaCheckError();
+		for (int i = 170; i < 200; i++)
 
-	thrust::device_vector<int> centroid_id_datapoint(points->num_data_points);
-	thrust::copy(points->cluster_id_of_point, points->cluster_id_of_point + points->num_data_points, centroid_id_datapoint.begin());
-	cudaCheckError();
-	int count[5];
+
+	{
+		std::cout << points->cluster_id_of_point[i] << ", ";
+	}
+	// thrust::device_vector<int> centroid_id_datapoint(points->num_data_points);
+	// thrust::copy(points->cluster_id_of_point, points->cluster_id_of_point + points->num_data_points, centroid_id_datapoint.begin());
+	// cudaCheckError();
+	int count[centroids->num_data_points];
 	for (int c = 0; c < centroids->num_data_points; c++)
 	{
-		count[c] = thrust::count(centroid_id_datapoint.begin(), centroid_id_datapoint.end(), c);
+		// count[c] = thrust::count(centroid_id_datapoint.begin(), centroid_id_datapoint.end(), c);
+		count[c] = thrust::count(points->cluster_id_of_point, points->cluster_id_of_point + points->num_data_points, c);
 
 		cudaCheckError();
 	}
-	std::cout << std::endl;
+
 
 	for (int feature = 0; feature < points->num_features; ++feature)
 	{
-		// thrust::device_vector<double> features(points->num_data_points);
-		// thrust::device_vector<double> sum_position_of_centroid_featers_x(centroids->num_data_points);
-		double *sumed_position = (double *)malloc(sizeof(double) * centroids->num_data_points);
-		memset(sumed_position, 0, centroids->num_data_points);
-		int *keys = (int *)malloc(sizeof(int) * centroids->num_data_points);
-		// thrust::copy(points->features_array[feature], points->features_array[feature] + points->num_data_points-1, features.begin());
-		// thrust::copy(points->features_array[feature], points->features_array[feature] + points->num_data_points, features.begin());
-		thrust::sort_by_key(points->cluster_id_of_point, points->cluster_id_of_point + points->num_data_points, points->features_array[feature]);
+		double *sumed_position_out = (double *)malloc(sizeof(double) * centroids->num_data_points);
+		memset(sumed_position_out, 0, centroids->num_data_points);
+		int *keys_out = (int *)malloc(sizeof(int) * centroids->num_data_points);
 
-		// auto val = features[points->num_data_points-1];
-		// cudaCheckError();
-		// thrust::reduce_by_key(centroid_id_datapoint.begin(), centroid_id_datapoint.end(), features.begin(), sum_position_of_centroid_featers_x.begin(), sum_position_of_centroid_featers_x.end());
-		auto new_end = thrust::reduce_by_key(points->cluster_id_of_point, points->cluster_id_of_point + points->num_data_points, points->features_array[feature], keys, sumed_position);
-		// std::cout<<"val:"<<val<<std::endl;
-		// cudaCheckError();
-		// 	for(int p =0;p<200;p++){
-		// 		std::cout<<"val: "<<points->features_array[feature][p]<<", id: "<<points->cluster_id_of_point[p]<<std::endl;
-		// 	}
-		// 	std::cout<<std::endl;
+		int *keys_copy = (int *)malloc(sizeof(int) * points->num_data_points);
+		double *features_copy = (double *)malloc(sizeof(double) * points->num_data_points);
 
-		// std::cout<<"{ ";
+		for (int i = 0; i < points->num_data_points; ++i)
+		{
+			keys_copy[i] = points->cluster_id_of_point[i];
+
+			features_copy[i] = points->features_array[feature][i];
+		}
+
+		thrust::sort_by_key(keys_copy, keys_copy + points->num_data_points, features_copy);
+
+		auto new_end = thrust::reduce_by_key(keys_copy, keys_copy + points->num_data_points, features_copy, keys_out, sumed_position_out);
+
+		// std::cout<<"feature: "<<feature<<" |";
 		for (auto c = 0; c < centroids->num_data_points; c++)
 		{
-			// std::cout<<*c<<std::endl;
-			centroids->features_array[feature][c] = sumed_position[c] / count[c];
+			centroids->features_array[feature][c] = sumed_position_out[c] / count[c];
+			// std::cout<<centroids->features_array[feature][c]<<", ";
 		}
-		// 		std::cout<<" }"<<std::endl;
+		// std::cout<<std::endl;
+
+		free(keys_copy);
+		free(features_copy);
+		free(sumed_position_out);
+		free(keys_out);
 	}
+	// std::cout << std::endl;
+
+	// std::cout << "-------------------------\n";
+	// for (int i = 0; i < 200; i++)
+	// {
+	// 	std::cout << points->cluster_id_of_point[i] << ", ";
+	// }
+	// std::cout << std::endl;
+	// for (int i = 0; i < centroids->num_data_points; i++)
+	// {
+	// 	std::cout << count[i] << ", ";
+	// }
 }
