@@ -89,7 +89,7 @@ int main(int argc, char **argv)
 	int num_epoches = 10;
 	RunKMeansClustering(KMeansOneIterationGpuThurst, "THRUST", num_features, num_points, num_cluster, num_epoches);
 	RunKMeansClustering(KMeansOneIterationCpu, "CPU", num_features, num_points, num_cluster, num_epoches);
-	// RunKMeansClustering(KMeansOneIterationGpu, "GPU", num_features, num_points, num_cluster, num_epoches);
+	RunKMeansClustering(KMeansOneIterationGpu, "GPU", num_features, num_points, num_cluster, num_epoches);
 	DataPoints *point = GeneratePoints(num_features, num_points);
 	SaveCsv(point, "Input.csv");
 	DeallocateDataPoints(point);
