@@ -10,16 +10,16 @@ void KMeansOneIterationCpu(DataPoints *points, DataPoints *centroids)
 {
 	// init
 	int *nPoints = (int *)malloc(sizeof(int) * centroids->num_data_points);
-	double **sum = (double **)malloc(sizeof(double *) * centroids->num_features);
+	float **sum = (float **)malloc(sizeof(float *) * centroids->num_features);
 
 	for (int feature = 0; feature < points->num_features; ++feature)
 	{
-		sum[feature] = (double *)malloc(sizeof(double) * centroids->num_data_points);
+		sum[feature] = (float *)malloc(sizeof(float) * centroids->num_data_points);
 	}
 	for (int c = 0; c < centroids->num_data_points; ++c)
 	{
 		nPoints[c] = 0;
-		std::vector<double> tmp;
+		std::vector<float> tmp;
 
 		for (int feature = 0; feature < points->num_features; ++feature)
 		{
@@ -33,8 +33,8 @@ void KMeansOneIterationCpu(DataPoints *points, DataPoints *centroids)
 	{
 		for (int c = 0; c < centroids->num_data_points; ++c)
 		{
-			double dist = Distance(centroids, points, p, c);
-			double min_dist = points->minDist_to_cluster[p];
+			float dist = Distance(centroids, points, p, c);
+			float min_dist = points->minDist_to_cluster[p];
 			if (dist < min_dist)
 			{
 				points->minDist_to_cluster[p] = dist;

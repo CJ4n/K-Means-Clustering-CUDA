@@ -12,10 +12,10 @@ __global__ void FindClosestCentroids(DataPoints *points, DataPoints *centroids)
 		{
 			return;
 		}
-		double dist = 0;
+		float dist = 0;
 		for (int feature = 0; feature < centroids->num_features; ++feature)
 		{
-			double tmp = points->features_array[feature][gid] - centroids->features_array[feature][c];
+			float tmp = points->features_array[feature][gid] - centroids->features_array[feature][c];
 			dist += tmp * tmp;
 		}
 
@@ -27,6 +27,6 @@ __global__ void FindClosestCentroids(DataPoints *points, DataPoints *centroids)
 	}
 	if (points->num_data_points > gid)
 	{
-		points->minDist_to_cluster[gid] = __DBL_MAX__;
+		points->minDist_to_cluster[gid] = __FLT_MAX__;
 	}
 }

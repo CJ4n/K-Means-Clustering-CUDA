@@ -38,13 +38,13 @@ void KMeansOneIterationGpuThurst(DataPoints *points, DataPoints *centroids)
 	cudaMemcpyAsync(keys_copy, points->cluster_id_of_point, sizeof(int) * points->num_data_points, cudaMemcpyDeviceToDevice);
 	cudaCheckError();
 
-	double *features_copy;
-	cudaMallocManaged(&features_copy, sizeof(double) * points->num_data_points);
-	cudaMemcpyAsync(features_copy, points->features_array[0], sizeof(double) * points->num_data_points, cudaMemcpyDeviceToDevice);
+	float *features_copy;
+	cudaMallocManaged(&features_copy, sizeof(float) * points->num_data_points);
+	cudaMemcpyAsync(features_copy, points->features_array[0], sizeof(float) * points->num_data_points, cudaMemcpyDeviceToDevice);
 	cudaCheckError();
 
-	double *sumed_position_out;
-	cudaMallocManaged(&sumed_position_out, sizeof(double) * centroids->num_data_points);
+	float *sumed_position_out;
+	cudaMallocManaged(&sumed_position_out, sizeof(float) * centroids->num_data_points);
 	int *keys_out;
 	cudaMallocManaged(&keys_out, sizeof(int) * centroids->num_data_points);
 
@@ -64,7 +64,7 @@ void KMeansOneIterationGpuThurst(DataPoints *points, DataPoints *centroids)
 			cudaMemcpyAsync(keys_copy, points->cluster_id_of_point, sizeof(int) * points->num_data_points, cudaMemcpyDeviceToDevice);
 			cudaCheckError();
 
-			cudaMemcpyAsync(features_copy, points->features_array[feature + 1], sizeof(double) * points->num_data_points, cudaMemcpyDeviceToDevice);
+			cudaMemcpyAsync(features_copy, points->features_array[feature + 1], sizeof(float) * points->num_data_points, cudaMemcpyDeviceToDevice);
 			cudaCheckError();
 		}
 

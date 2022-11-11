@@ -2,7 +2,7 @@
 #include <ctime>
 
 #define MIN_FEATURE_VALUE 0
-#define MAX_FEATURE_VALUE 150
+#define MAX_FEATURE_VALUE 35
 DataPoints *GeneratePoints(int num_features, int num_points)
 {
     DataPoints *data = AllocateDataPoints(num_features, num_points);
