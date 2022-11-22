@@ -10,7 +10,7 @@
 // }
 
 // template <int NUM_FEATURES=2,int NUM_DATA_POINTS=200>
-__global__ void reduce4(DataPoints *points, DataPoints *centroids, DataPoints **out)
+__global__ void reduce4(DataPoints *points, DataPoints *centroids, DataPoints *out)
 {
 	extern __shared__ float shm[];
 	int tid = threadIdx.x;
@@ -59,7 +59,7 @@ __global__ void reduce4(DataPoints *points, DataPoints *centroids, DataPoints **
 		{
 			for (int c = 0; c < centroids->num_data_points; c++)
 			{
-				out[blockIdx.x]->features_array[f][c] = shm[(f * feature_stirde + c)];
+				out->features_array[f][c+blockIdx.x * centroids->num_data_points] = shm[(f * feature_stirde + c)];
 			}
 		}
 		// out[blockIdx.x]= shm[3];
@@ -94,39 +94,48 @@ void KMeansOneIterationGpu(DataPoints *points, DataPoints *centroids)
 	int num_threads = 1024;
 	int num_blocks = (int)std::max(std::ceil((int)(N / num_threads)), 1.0);
 	size_t shmem_size = (num_threads) * sizeof(float) * centroids->num_features * centroids->num_data_points;
-		FindClosestCentroids<<<num_blocks, num_threads>>>(points, centroids);
-		cudaDeviceSynchronize();
+	FindClosestCentroids<<<num_blocks, num_threads>>>(points, centroids);
+	cudaDeviceSynchronize();
 
-	DataPoints **out;
+	// DataPoints **out;
+	// int ile = std::ceil(num_blocks / 2);
+	// cudaMallocManaged(&out, sizeof(DataPoints *) * ile);
+	// for (int i = 0; i < ile; i++)
+	// {
+	// 	out[i] = AllocateDataPoints(centroids->num_features, centroids->num_data_points);
+	// }
+	DataPoints *out;
 	int ile = std::ceil(num_blocks / 2);
-	cudaMallocManaged(&out, sizeof(DataPoints *) * ile);
-	for (int i = 0; i < ile; i++)
-	{
-		out[i] = AllocateDataPoints(centroids->num_features, centroids->num_data_points);
-	}
 
-	reduce4 /*<centroids->num_features,centroids->num_data_points>*/<<<num_blocks / 2, num_threads, shmem_size>>>(points, centroids, out);
+out = AllocateDataPoints(centroids->num_features,centroids->num_data_points* num_blocks/2);
+	// cudaMallocManaged(&out, sizeof(DataPoints) * ile)
+
+		reduce4 /*<centroids->num_features,centroids->num_data_points>*/<<<num_blocks / 2, num_threads, shmem_size>>>(points, centroids, out);
+	cudaDeviceSynchronize();
+	shmem_size = (num_blocks / 2) * sizeof(float) * centroids->num_features * centroids->num_data_points;
+	// reduce4 /*<centroids->num_features,centroids->num_data_points>*/<<<1, num_blocks / 2, shmem_size>>>(out, centroids, out);
 	cudaDeviceSynchronize();
 	cudaCheckError();
 
-	for (int i = ile - 1; i < ile; i++)
+	for (int i = 0; i < 1; i++)
 	{
+		// int i = 0;
 		std::cout << "block id: " << i << std::endl;
-		for (int f = 0; f < out[i]->num_features; f++)
+		for (int f = 0; f < out->num_features; f++)
 		{
-			for (int c = 0; c < out[i]->num_data_points; c++)
+			for (int c = 0; c < centroids->num_data_points; c++)
 			{
-				std::cout << out[i]->features_array[f][c] << ", ";
+				std::cout << out->features_array[f][c+i * centroids->num_data_points] << ", ";
 			}
 		}
 		std::cout << "\nblock id: " << i << std::endl;
 	}
 
-	for (int i = 0; i < ile; i++)
+	// for (int i = 0; i < ile; i++)
 	{
-		DeallocateDataPoints(out[i]);
+		DeallocateDataPoints(out);
 	}
-	cudaFree(out);
+	// cudaFree(out);
 	std::cout << std::endl;
 
 	cudaCheckError();

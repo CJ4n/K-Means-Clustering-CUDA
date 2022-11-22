@@ -55,7 +55,7 @@ void kMeansClustering(DataPoints *point, int epochs, int num_clusters, void (*k_
 		k_means_one_iteration_algorithm(point, centroids);
 	cudaDeviceSynchronize();
 		
-		// std::cout << "epoch: " << epoch << " Error: " << MeanSquareError(point, centroids) << std::endl;
+		 std::cout << "epoch: " << epoch << " Error: " << MeanSquareError(point, centroids) << std::endl;
 		if (DEBUG)
 		{
 			for (int feature = 0; feature < point->num_features; ++feature)
