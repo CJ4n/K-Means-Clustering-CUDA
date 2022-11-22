@@ -18,6 +18,9 @@ DataPoints *AllocateDataPoints(int num_features, int num_data_points)
 	point->num_data_points = num_data_points;
 	cudaMallocManaged(&(point->cluster_id_of_point), sizeof(int) * num_data_points);
 	cudaCheckError();
+	// for(int i = 0;i<num_data_points;i++){
+	// 	point->cluster_id_of_point[i]=1;
+	// }
 	cudaMallocManaged(&(point->minDist_to_cluster), sizeof(float) * num_data_points);
 	cudaCheckError();
 

@@ -17,12 +17,9 @@ struct Point
 								cluster(-1),
 								minDist(__FLT_MAX__) {}
 
-	// double distance(Point p)
-	// {
-	// 	return (p.x - x) * (p.x - x) + (p.y - y) * (p.y - y);
-	// }
-};
 
+};
+ 
 struct DataPoints
 {
 	float **features_array;
