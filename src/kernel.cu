@@ -86,9 +86,9 @@ void RunKMeansClustering(void (*k_means_one_iteration_algorithm)(DataPoints *, D
 
 int main(int argc, char **argv)
 {
-	int num_features = 2;
+	int num_features = 5;
 	int num_points = 1 << 15;
-	int num_cluster = 7;
+	int num_cluster = 3;
 	int num_epoches = 10;
 	// RunKMeansClustering(KMeansOneIterationGpuThurst, "THRUST", num_features, num_points, num_cluster, num_epoches);
 	RunKMeansClustering(KMeansOneIterationCpu, "CPU", num_features, num_points, num_cluster, num_epoches);
