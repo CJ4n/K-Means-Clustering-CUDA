@@ -86,15 +86,26 @@ void RunKMeansClustering(void (*k_means_one_iteration_algorithm)(DataPoints *, D
 
 int main(int argc, char **argv)
 {
-	int num_features = 5;
+	// int num_features = 3;
+	// int num_points = 1 << 15;
+	// int num_cluster = 5;
+
+	// int num_epoches = 10;
+	// // RunKMeansClustering(KMeansOneIterationGpuThurst, "THRUST", num_features, num_points, num_cluster, num_epoches);
+	// RunKMeansClustering(KMeansOneIterationCpu, "CPU", num_features, num_points, num_cluster, num_epoches);
+	// RunKMeansClustering(KMeansOneIterationGpu, "GPU", num_features, num_points, num_cluster, num_epoches);
+	// DataPoints *point = GeneratePoints(num_features, num_points);
+	// SaveCsv(point, "Input.csv");
+	// DeallocateDataPoints(point);
+	for( int num_features=1;num_features<9;num_features++){
 	int num_points = 1 << 15;
-	int num_cluster = 3;
-	int num_epoches = 10;
+	int num_cluster = 5;
+
+	int num_epoches = 1;
+	std::cout<<"features: "<<num_features<<std::endl;
 	// RunKMeansClustering(KMeansOneIterationGpuThurst, "THRUST", num_features, num_points, num_cluster, num_epoches);
-	RunKMeansClustering(KMeansOneIterationCpu, "CPU", num_features, num_points, num_cluster, num_epoches);
 	RunKMeansClustering(KMeansOneIterationGpu, "GPU", num_features, num_points, num_cluster, num_epoches);
-	DataPoints *point = GeneratePoints(num_features, num_points);
-	SaveCsv(point, "Input.csv");
-	DeallocateDataPoints(point);
+	}
+
 	return 0;
 }
