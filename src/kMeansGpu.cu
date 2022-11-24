@@ -4,7 +4,7 @@
 #include "cudaCheckError.h"
 
 // template <int NUM_FEATURES=2,int NUM_DATA_POINTS=200>
-__global__ void reduce4(const DataPoints *points, int k /*number of centroids*/, DataPoints *out, int num_threads, int num_blocks)
+__global__ void reduce4(const DataPoints *points, int k /*number of centroids*/, DataPoints *out)
 {
 	extern __shared__ float shm[];
 	int tid = threadIdx.x;
@@ -22,11 +22,12 @@ __global__ void reduce4(const DataPoints *points, int k /*number of centroids*/,
 		if (gid + blockDim.x >= points->num_data_points)
 		{
 			break;
+			;
 		}
 
 		int c = points->cluster_id_of_point[gid];
 
-		shm[((f * feature_stirde) + c) + tid * points->num_features * k] = points->features_array[f][gid];
+		shm[((f * feature_stirde) + c) + tid * points->num_features * k] += points->features_array[f][gid];
 
 		c = points->cluster_id_of_point[gid + blockDim.x];
 		shm[((f * feature_stirde) + c) + tid * points->num_features * k] += points->features_array[f][gid + blockDim.x];
@@ -111,14 +112,6 @@ void KMeansOneIterationGpu(DataPoints *points, DataPoints *centroids)
 	int tmp = num_blocks * centroids->num_data_points;
 	tmp = lambda(tmp);
 
-	DataPoints *out = AllocateDataPoints(centroids->num_features, tmp);
-	cudaCheckError();
-
-	for (int i = 0; i < tmp; i++)
-	{
-		out->cluster_id_of_point[i] = i % centroids->num_data_points;
-	}
-
 	std::cout << "summed without kernel:  ";
 
 	for (int c = 0; c < centroids->num_data_points; c++)
@@ -136,8 +129,15 @@ void KMeansOneIterationGpu(DataPoints *points, DataPoints *centroids)
 	}
 	std::cout << std::endl;
 	cudaCheckError();
+	
+	DataPoints *out = AllocateDataPoints(centroids->num_features, tmp);
+	cudaCheckError();
 
-	reduce4 /*<centroids->num_features,centroids->num_data_points>*/<<<num_blocks, num_threads, shmem_size>>>(points, centroids->num_data_points, out, num_threads, num_blocks);
+	for (int i = 0; i < tmp; i++)
+	{
+		out->cluster_id_of_point[i] = i % centroids->num_data_points;
+	}
+	reduce4 /*<centroids->num_features,centroids->num_data_points>*/<<<num_blocks, num_threads, shmem_size>>>(points, centroids->num_data_points, out);
 	cudaDeviceSynchronize();
 	cudaCheckError();
 
@@ -161,8 +161,12 @@ void KMeansOneIterationGpu(DataPoints *points, DataPoints *centroids)
 	shmem_size = num_threads * sizeof(float) * centroids->num_features * centroids->num_data_points;
 	// jest jakiś problem z sumowanien dla niektórych clustrów?>?
 	// wyklada że problem gdy liczba kalstrow to nie wielokrotnosci 2
-	auto ret = AllocateDataPoints(centroids->num_features, centroids->num_data_points);
-	reduce4 /*<centroids->num_features,centroids->num_data_points>*/<<<1, num_threads, shmem_size>>>(out, centroids->num_data_points, ret, num_threads, 1);
+	// DataPoints * ret = AllocateDataPoints(centroids->num_features, centroids->num_data_points);
+	cudaDeviceSynchronize();
+
+	reduce4 /*<centroids->num_features,centroids->num_data_points>*/<<<1, num_threads, shmem_size>>>(out, centroids->num_data_points, out);
+	//w jakiś pojebady sposób poprzednie wywołania w kernell.cu w pętli dla róznych rozmiarów feature wpływaly na wynik ixDDDDDDDDDDDDDDDDd
+	// zakomnetowancie reuduce4 wpływan na wyniki z 146-156 xDDDDDDDDDd??? o co chodzi?>??
 	cudaDeviceSynchronize();
 	cudaCheckError();
 
@@ -219,31 +223,31 @@ void KMeansOneIterationGpu(DataPoints *points, DataPoints *centroids)
 			int sum = 0;
 			for (int i = 0; i < points->num_data_points; i++)
 			{
-				// if (c == points->cluster_id_of_point[i])
+				if (c == points->cluster_id_of_point[i])
 					sum += points->features_array[f][i];
 			}
 			std::cout << sum << ", ";
 		}
 
-		std::cout << std::endl;
-		std::cout << "summed with one kernel: ";
-		for (int f = 0; f < out->num_features; f++)
-		{
-			int sum = 0;
-			for (int i = 0; i < tmp; i++)
-				if (out->cluster_id_of_point[i] == c)
-					// sum += out->features_array[f][c + i * centroids->num_data_points];
-					sum += out->features_array[f][i];
-			std::cout << sum << ", ";
-		}
+		// std::cout << std::endl;
+		// std::cout << "summed with one kernel: ";
+		// for (int f = 0; f < out->num_features; f++)
+		// {
+		// 	int sum = 0;
+		// 	for (int i = 0; i < tmp; i++)
+		// 		if (out->cluster_id_of_point[i] == c)
+		// 			// sum += out->features_array[f][c + i * centroids->num_data_points];
+		// 			sum += out->features_array[f][i];
+		// 	std::cout << sum << ", ";
+		// }
 
 		std::cout << std::endl;
 		std::cout << "sumed all with kernel:  ";
-		for (int f = 0; f < ret->num_features; f++)
+		for (int f = 0; f < out->num_features; f++)
 		{
 			int sum = 0;
 			// for (int i = 0; i < 1; i++)
-			sum += ret->features_array[f][c];
+			sum += out->features_array[f][c];
 			std::cout << sum << ", ";
 		}
 		std::cout << std::endl;
@@ -252,6 +256,6 @@ void KMeansOneIterationGpu(DataPoints *points, DataPoints *centroids)
 	std::cout << std::endl;
 
 	DeallocateDataPoints(out);
-	DeallocateDataPoints(ret);
+	// DeallocateDataPoints(ret);
 	cudaCheckError();
 }
