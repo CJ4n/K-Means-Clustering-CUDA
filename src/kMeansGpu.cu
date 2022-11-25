@@ -99,28 +99,29 @@ __global__ void ReduceDataPoints(const DataPoints *points, int k /*number of cen
 	}
 }
 
-//rewrote find to parallrl
-__global__ void FindNewCentroids(DataPoints *centroids,int * count,DataPoints* reduced_points)
+// rewrote find to parallrl
+__global__ void FindNewCentroids(DataPoints *centroids, int *count, DataPoints *reduced_points)
 {
-	//f{ccc}f{ccc}
-	//3*5
-	for (int c = 0; c < centroids->num_data_points; c++)
-	{
-		for (int f = 0; f < centroids->num_features; f++)
-		{
-			centroids->features_array[f][c] = reduced_points->features_array[f][c] / (float)count[c];
-		}
-	}
+	// f{ccc}f{ccc}
+	// 3*5
+	int gid = blockIdx.x * blockDim.x + threadIdx.x;
+	int tid = threadIdx.x;
+	// for (int c = 0; c < centroids->num_data_points; c++)
+	// {
+	// 	for (int f = 0; f < centroids->num_features; f++)
+	(*(*(centroids->features_array) + gid)) = (*(*(reduced_points->features_array) + gid)) / (float)count[gid % centroids->num_data_points];
+	// reduced_points->features_array[gid] ;
+	// {
+	// }
+	// }
 }
-__global__ void InitPointsWithCentroidsIds(DataPoints *points,int k)
+__global__ void InitPointsWithCentroidsIds(DataPoints *points, int k)
 {
-	int gid = blockIdx.x*blockDim.x+threadIdx.x;
-	points->cluster_id_of_point[gid]=gid%k;
+	int gid = blockIdx.x * blockDim.x + threadIdx.x;
+	points->cluster_id_of_point[gid] = gid % k;
 }
-
 
 #include <iostream>
-// static float total = 0;
 #define DEBUG 0
 
 // #define MEASURE_TIME(func, timer,...) /
@@ -140,30 +141,12 @@ void KMeansOneIterationGpu(DataPoints *points, DataPoints *centroids)
 
 	// first reduce
 	timer_find_closest_centroids.Start();
-	FindClosestCentroids<<<1, num_blocks*num_features>>>(points, centroids);
+	FindClosestCentroids<<<num_blocks, num_threads>>>(points, centroids);
 	timer_find_closest_centroids.Stop();
 	timer_find_closest_centroids.Elapsed();
 	cudaCheckError();
 	// first reduce
 
-	num_blocks = std::ceil(num_blocks / 2);
-	//rewerite lambda
-	auto lambda = [](int n)
-	{
-		unsigned count = 0;
-		if (n && !(n & (n - 1)))
-			return n;
-
-		while (n != 0)
-		{
-			n >>= 1;
-			count += 1;
-		}
-
-		return 1 << count;
-	};
-	int tmp = num_blocks * num_clusters;
-	tmp = lambda(tmp);
 	if (DEBUG)
 	{
 		std::cout << "summed without kernel:  ";
@@ -184,22 +167,43 @@ void KMeansOneIterationGpu(DataPoints *points, DataPoints *centroids)
 		std::cout << std::endl;
 		cudaCheckError();
 	}
+	num_blocks = std::ceil(num_blocks / 2);
+	// rewerite lambda
+	auto lambda = [](int n)
+	{
+		unsigned count = 0;
+		if (n && !(n & (n - 1)))
+			return n;
 
+		while (n != 0)
+		{
+			n >>= 1;
+			count += 1;
+		}
+
+		return 1 << count;
+	};
+	int tmp = num_blocks * num_clusters;
+	tmp = lambda(tmp);
 	DataPoints *out = AllocateDataPoints(num_features, tmp);
+	int nt = tmp/num_threads;
+	InitPointsWithCentroidsIds<<<nt, num_threads>>>(out, num_clusters);
+	cudaDeviceSynchronize();
+	cudaCheckError();
+
+	// for (int i = 0; i < tmp; i++)
+	// {
+	// 	out->cluster_id_of_point[i] = i % num_clusters;
+	// }
+
 	int *count_out;
 	cudaMallocManaged(&count_out, sizeof(int) * num_blocks * num_clusters);
 	cudaCheckError();
 	cudaMemset(count_out, 0, sizeof(int) * num_blocks * num_clusters);
-
-	// InitPointsWithCentroidsIds<<<1, num_blocks*num_clusters>>>(out,num_clusters);
-	// cudaDeviceSynchronize();
-	for (int i = 0; i < tmp; i++)
-	{
-		out->cluster_id_of_point[i] = i % num_clusters;
-	}
-
+	cudaCheckError();
 	// second reduce
 	timer_compute_centroids.Start();
+	// cudaDeviceSetCacheConfig(cudaFuncCachePreferShared);
 	ReduceDataPoints<<<num_blocks, num_threads, shmem_size>>>(points, num_clusters, out, 1, count_out);
 	timer_compute_centroids.Stop();
 	timer_compute_centroids.Elapsed();
@@ -231,7 +235,7 @@ void KMeansOneIterationGpu(DataPoints *points, DataPoints *centroids)
 	timer_compute_centroids.Stop();
 	timer_compute_centroids.Elapsed();
 	cudaCheckError();
-	FindNewCentroids<<<1,num_features*num_clusters>>>(centroids,count_out,out);
+	FindNewCentroids<<<1, num_features * num_clusters>>>(centroids, count_out, out);
 	cudaDeviceSynchronize();
 	for (int c = 0; c < num_clusters; c++)
 	{

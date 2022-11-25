@@ -89,15 +89,15 @@ int main(int argc, char **argv)
 {
 	// InitTimers();
 
-	int num_features = 5;
-	int num_points = 1 << 14;
-	int num_cluster = 6;
+	int num_features = 2;
+	int num_points = 1 << 18;
+	int num_cluster = 3;
 
 	int num_epoches = 10;
 	//________________________________THRUST________________________________
 	std::cout << "----------------THURST----------------" << std::endl;
 	timer_thurst_version.Start();
-	// RunKMeansClustering(KMeansOneIterationGpuThurst, "THRUST", num_features, num_points, num_cluster, num_epoches);
+	RunKMeansClustering(KMeansOneIterationGpuThurst, "THRUST", num_features, num_points, num_cluster, num_epoches);
 	timer_thurst_version.Stop();
 	timer_thurst_version.Elapsed();
 	std::cout << "THURST implementation: " << timer_thurst_version.total_time << std::endl;
