@@ -20,6 +20,7 @@
 #include "kMeansGpuThrust.h"
 #include "kMeansGpu.h"
 #include "GeneratePoints.h"
+#include "timer.h"
 
 #define DEBUG 0
 #define RANDOM_CENTROID_INITIALIZATION 0
@@ -86,27 +87,32 @@ void RunKMeansClustering(void (*k_means_one_iteration_algorithm)(DataPoints *, D
 
 int main(int argc, char **argv)
 {
-	// int num_features = 3;
-	// int num_points = 1 << 15;
-	// int num_cluster = 5;
+	// InitTimers();
 
-	// int num_epoches = 10;
-	// // RunKMeansClustering(KMeansOneIterationGpuThurst, "THRUST", num_features, num_points, num_cluster, num_epoches);
-	// RunKMeansClustering(KMeansOneIterationCpu, "CPU", num_features, num_points, num_cluster, num_epoches);
-	// RunKMeansClustering(KMeansOneIterationGpu, "GPU", num_features, num_points, num_cluster, num_epoches);
-	// DataPoints *point = GeneratePoints(num_features, num_points);
-	// SaveCsv(point, "Input.csv");
-	// DeallocateDataPoints(point);
-	for (int num_features = 0; num_features < 9; num_features++)
-	{
-		int num_points = 1 << 15;
-		int num_cluster = 6;
+	int num_features = 5;
+	int num_points = 1 << 14;
+	int num_cluster = 6;
 
-		int num_epoches = 1;
-		std::cout << "features: " << num_features << std::endl;
-		// RunKMeansClustering(KMeansOneIterationGpuThurst, "THRUST", num_features, num_points, num_cluster, num_epoches);
-		RunKMeansClustering(KMeansOneIterationGpu, "GPU", num_features, num_points, num_cluster, num_epoches);
-	}
+	int num_epoches = 10;
+	// RunKMeansClustering(KMeansOneIterationGpuThurst, "THRUST", num_features, num_points, num_cluster, num_epoches);
+	RunKMeansClustering(KMeansOneIterationCpu, "CPU", num_features, num_points, num_cluster, num_epoches);
+	RunKMeansClustering(KMeansOneIterationGpu, "GPU", num_features, num_points, num_cluster, num_epoches);
+	DataPoints *point = GeneratePoints(num_features, num_points);
+	SaveCsv(point, "Input.csv");
+	DeallocateDataPoints(point);
+	std::cout << "compute_centroids: " << timer_compute_centroids.total_time << "ms" << std::endl;
+	std::cout << "find_closest_centroids: " << timer_find_closest_centroids.total_time << "ms" << std::endl;
+
+	// for (int num_features = 0; num_features < 9; num_features++)
+	// {
+	// 	int num_points = 1 << 15;
+	// 	int num_cluster = 6;
+
+	// 	int num_epoches = 1;
+	// 	std::cout << "features: " << num_features << std::endl;
+	// 	// RunKMeansClustering(KMeansOneIterationGpuThurst, "THRUST", num_features, num_points, num_cluster, num_epoches);
+	// 	RunKMeansClustering(KMeansOneIterationGpu, "GPU", num_features, num_points, num_cluster, num_epoches);
+	// }
 
 	return 0;
 }
