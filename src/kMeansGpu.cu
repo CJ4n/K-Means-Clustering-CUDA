@@ -8,7 +8,7 @@
 #define INDEX_ID(c, tid, feature_stide, k, num_features) ((num_features * feature_stirde) + c) + tid *(num_features + 1) * k
 
 // template <int NUM_FEATURES=2,int NUM_DATA_POINTS=200>
-__global__ void ReduceDataPoints(const DataPoints *points, int k /*number of centroids*/, DataPoints *out, int count_in, int *count_out)
+__global__ void ReduceDataPoints(const DataPoints *points, int k /*number of centroids*/, DataPoints *out, int count_in, int *count_out, int num_data_points)
 {
 	extern __shared__ float shm[];
 	int tid = threadIdx.x;
@@ -28,7 +28,7 @@ __global__ void ReduceDataPoints(const DataPoints *points, int k /*number of cen
 			shm[INDEX(f, c, tid, feature_stirde, k, num_features)] = 0;
 			shm[INDEX_ID(c, tid, feature_stirde, k, num_features)] = 0;
 		}
-		if (gid + blockDim.x >= points->num_data_points)
+		if (gid + blockDim.x >= num_data_points)
 		{
 			break;
 		}
@@ -99,22 +99,15 @@ __global__ void ReduceDataPoints(const DataPoints *points, int k /*number of cen
 	}
 }
 
-// rewrote find to parallrl
 __global__ void FindNewCentroids(DataPoints *centroids, int *count, DataPoints *reduced_points)
 {
-	// f{ccc}f{ccc}
-	// 3*5
 	int gid = blockIdx.x * blockDim.x + threadIdx.x;
 	int tid = threadIdx.x;
-	// for (int c = 0; c < centroids->num_data_points; c++)
-	// {
-	// 	for (int f = 0; f < centroids->num_features; f++)
-	(*(*(centroids->features_array) + gid)) = (*(*(reduced_points->features_array) + gid)) / (float)count[gid % centroids->num_data_points];
-	// reduced_points->features_array[gid] ;
-	// {
-	// }
-	// }
+	int f = gid / centroids->num_data_points;
+	int c = gid % centroids->num_data_points;
+	centroids->features_array[f][c] = reduced_points->features_array[f][c] / (float)count[c];
 }
+
 __global__ void InitPointsWithCentroidsIds(DataPoints *points, int k)
 {
 	int gid = blockIdx.x * blockDim.x + threadIdx.x;
@@ -122,51 +115,21 @@ __global__ void InitPointsWithCentroidsIds(DataPoints *points, int k)
 }
 
 #include <iostream>
-#define DEBUG 0
-
-// #define MEASURE_TIME(func, timer,...) /
-// {	 /
-// 	timer->Start();/
-// 	func(__VA_ARGS__);/
-
-// }
 void KMeansOneIterationGpu(DataPoints *points, DataPoints *centroids)
 {
 	int num_features = points->num_features;
 	int num_clusters = centroids->num_data_points;
 	int N = points->num_data_points;
-	int num_threads = 1024 / 4;
+	int num_threads = 1024;
 	int num_blocks = (int)std::max(std::ceil((int)(N / num_threads)), 1.0);
 	size_t shmem_size = num_threads * sizeof(float) * num_features * num_clusters + num_threads * sizeof(float) * num_clusters;
 
-	// first reduce
 	timer_find_closest_centroids.Start();
 	FindClosestCentroids<<<num_blocks, num_threads>>>(points, centroids);
 	timer_find_closest_centroids.Stop();
 	timer_find_closest_centroids.Elapsed();
 	cudaCheckError();
-	// first reduce
 
-	if (DEBUG)
-	{
-		std::cout << "summed without kernel:  ";
-
-		for (int c = 0; c < num_clusters; c++)
-		{
-			for (int f = 0; f < num_features; f++)
-			{
-				int sum = 0;
-				for (int i = 0; i < N; i++)
-				{
-					if (c == points->cluster_id_of_point[i])
-						sum += points->features_array[f][i];
-				}
-				std::cout << sum << ", ";
-			}
-		}
-		std::cout << std::endl;
-		cudaCheckError();
-	}
 	num_blocks = std::ceil(num_blocks / 2);
 	// rewerite lambda
 	auto lambda = [](int n)
@@ -186,94 +149,46 @@ void KMeansOneIterationGpu(DataPoints *points, DataPoints *centroids)
 	int tmp = num_blocks * num_clusters;
 	tmp = lambda(tmp);
 	DataPoints *out = AllocateDataPoints(num_features, tmp);
-	int nt = tmp/num_threads;
+	int nt = (int)std::max(std::ceil((int)(tmp / num_threads)), 1.0);
 	InitPointsWithCentroidsIds<<<nt, num_threads>>>(out, num_clusters);
 	cudaDeviceSynchronize();
 	cudaCheckError();
-
-	// for (int i = 0; i < tmp; i++)
-	// {
-	// 	out->cluster_id_of_point[i] = i % num_clusters;
-	// }
 
 	int *count_out;
 	cudaMallocManaged(&count_out, sizeof(int) * num_blocks * num_clusters);
 	cudaCheckError();
 	cudaMemset(count_out, 0, sizeof(int) * num_blocks * num_clusters);
 	cudaCheckError();
+
+	while (1)
+	{
+
+		break;
+	}
+
 	// second reduce
 	timer_compute_centroids.Start();
 	// cudaDeviceSetCacheConfig(cudaFuncCachePreferShared);
-	ReduceDataPoints<<<num_blocks, num_threads, shmem_size>>>(points, num_clusters, out, 1, count_out);
+	ReduceDataPoints<<<num_blocks, num_threads, shmem_size>>>(points, num_clusters, out, 1, count_out, points->num_data_points);
 	timer_compute_centroids.Stop();
 	timer_compute_centroids.Elapsed();
 	cudaCheckError();
 	// second reduce
 
-	if (DEBUG)
-	{
-		std::cout << "summed with one kernel: ";
-
-		for (int c = 0; c < num_clusters; c++)
-		{
-			for (int f = 0; f < num_features; f++)
-			{
-				int sum = 0;
-				for (int i = 0; i < tmp; i++)
-					if (out->cluster_id_of_point[i] == c)
-						sum += out->features_array[f][i];
-				std::cout << sum << ", ";
-			}
-		}
-		std::cout << std::endl;
-	}
 	num_threads = tmp / 2;
 	shmem_size = num_threads * sizeof(float) * num_features * num_clusters + num_threads * sizeof(float) * num_clusters;
 
 	timer_compute_centroids.Start();
-	ReduceDataPoints<<<1, num_threads, shmem_size>>>(out, num_clusters, out, 0, count_out);
+	// ReduceDataPoints<<<1, num_threads, shmem_size>>>(out, num_clusters, out, 0, count_out, out->num_data_points);
 	timer_compute_centroids.Stop();
 	timer_compute_centroids.Elapsed();
 	cudaCheckError();
 	FindNewCentroids<<<1, num_features * num_clusters>>>(centroids, count_out, out);
 	cudaDeviceSynchronize();
-	for (int c = 0; c < num_clusters; c++)
-	{
-		for (int f = 0; f < num_features; f++)
-		{
-			centroids->features_array[f][c] = out->features_array[f][c] / (float)count_out[c];
-		}
-	}
 
-	if (DEBUG)
-	{
-		for (int c = 0; c < num_clusters; c++)
-		{
-			std::cout << "cluster: " << c << "|\n";
-			std::cout << "summed without kernel:  ";
-
-			for (int f = 0; f < num_features; f++)
-			{
-				int sum = 0;
-				for (int i = 0; i < N; i++)
-				{
-					if (c == points->cluster_id_of_point[i])
-						sum += points->features_array[f][i];
-				}
-				std::cout << sum << ", ";
-			}
-
-			std::cout << std::endl;
-			std::cout << "sumed all with kernel:  ";
-			for (int f = 0; f < num_features; f++)
-			{
-				int sum = 0;
-				sum += out->features_array[f][c];
-				std::cout << sum << ", ";
-			}
-			std::cout << std::endl;
-		}
-	}
+	// for (int f = 0; f < num_features; f++)
+	// 	for (int c = 0; c < num_clusters; c++)
+	// 		centroids->features_array [f][c] = out->features_array[f][c] / count_out[c];
 
 	DeallocateDataPoints(out);
 	cudaFree(count_out);
