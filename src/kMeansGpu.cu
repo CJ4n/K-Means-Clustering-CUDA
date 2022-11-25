@@ -30,32 +30,32 @@ __global__ void ReduceDataPoints(const DataPoints *points, int k /*number of cen
 		}
 		if (gid + blockDim.x >= num_data_points)
 		{
-			break;
+			return;
 		}
 
 		int c = points->cluster_id_of_point[gid];
 
 		// shm[((f * feature_stirde) + c) + tid * points->num_features * k] += points->features_array[f][gid];
-		shm[INDEX(f, c, tid, feature_stirde, k, points->num_features)] += points->features_array[f][gid];
+		shm[INDEX(f, c, tid, feature_stirde, k, num_features)] += points->features_array[f][gid];
 
 		c = points->cluster_id_of_point[gid + blockDim.x];
 		// shm[((f * feature_stirde) + c) + tid * points->num_features * k] += points->features_array[f][gid + blockDim.x];
-		shm[INDEX(f, c, tid, feature_stirde, k, points->num_features)] += points->features_array[f][gid + blockDim.x];
+		shm[INDEX(f, c, tid, feature_stirde, k, num_features)] += points->features_array[f][gid + blockDim.x];
 		// shm[INDEX_ID(c, tid, feature_stirde, k, points->num_features)] += 1;
 		// idx where to store particualr feature coord
 	}
 
 	int c = points->cluster_id_of_point[gid];
 	if (count_in)
-		shm[INDEX_ID(c, tid, feature_stirde, k, points->num_features)] = count_in;
+		shm[INDEX_ID(c, tid, feature_stirde, k, num_features)] = count_in;
 	else
-		shm[INDEX_ID(c, tid, feature_stirde, k, points->num_features)] = count_out[gid];
+		shm[INDEX_ID(c, tid, feature_stirde, k, num_features)] = count_out[gid];
 
 	c = points->cluster_id_of_point[gid + blockDim.x];
 	if (count_in)
-		shm[INDEX_ID(c, tid, feature_stirde, k, points->num_features)] += count_in;
+		shm[INDEX_ID(c, tid, feature_stirde, k, num_features)] += count_in;
 	else
-		shm[INDEX_ID(c, tid, feature_stirde, k, points->num_features)] += count_out[gid + blockDim.x];
+		shm[INDEX_ID(c, tid, feature_stirde, k, num_features)] += count_out[gid + blockDim.x];
 
 	__syncthreads();
 
@@ -83,7 +83,7 @@ __global__ void ReduceDataPoints(const DataPoints *points, int k /*number of cen
 
 	if (tid == 0)
 	{
-		for (int f = 0; f < points->num_features; ++f)
+		for (int f = 0; f < num_features; ++f)
 		{
 			for (int c = 0; c < k; ++c)
 			{
@@ -102,7 +102,6 @@ __global__ void ReduceDataPoints(const DataPoints *points, int k /*number of cen
 __global__ void FindNewCentroids(DataPoints *centroids, int *count, DataPoints *reduced_points)
 {
 	int gid = blockIdx.x * blockDim.x + threadIdx.x;
-	int tid = threadIdx.x;
 	int f = gid / centroids->num_data_points;
 	int c = gid % centroids->num_data_points;
 	centroids->features_array[f][c] = reduced_points->features_array[f][c] / (float)count[c];
@@ -111,6 +110,10 @@ __global__ void FindNewCentroids(DataPoints *centroids, int *count, DataPoints *
 __global__ void InitPointsWithCentroidsIds(DataPoints *points, int k)
 {
 	int gid = blockIdx.x * blockDim.x + threadIdx.x;
+	// if (gid >= points->num_data_points)
+	// {
+	// 	// return;
+	// }
 	points->cluster_id_of_point[gid] = gid % k;
 }
 
@@ -120,7 +123,7 @@ void KMeansOneIterationGpu(DataPoints *points, DataPoints *centroids)
 	int num_features = points->num_features;
 	int num_clusters = centroids->num_data_points;
 	int N = points->num_data_points;
-	int num_threads = 1024;
+	int num_threads = 1024 / 4;
 	int num_blocks = (int)std::max(std::ceil((int)(N / num_threads)), 1.0);
 	size_t shmem_size = num_threads * sizeof(float) * num_features * num_clusters + num_threads * sizeof(float) * num_clusters;
 
@@ -149,42 +152,84 @@ void KMeansOneIterationGpu(DataPoints *points, DataPoints *centroids)
 	int tmp = num_blocks * num_clusters;
 	tmp = lambda(tmp);
 	DataPoints *out = AllocateDataPoints(num_features, tmp);
-	int nt = (int)std::max(std::ceil((int)(tmp / num_threads)), 1.0);
-	InitPointsWithCentroidsIds<<<nt, num_threads>>>(out, num_clusters);
+	int num_threads_inti_id = std::min(1024, tmp);
+	int num_block_init_id = (int)std::max(std::ceil((int)(tmp / num_threads_inti_id)), 1.0);
+	InitPointsWithCentroidsIds<<<num_block_init_id, num_threads_inti_id>>>(out, num_clusters);
+	// for (int i = 0; i < num_block_init_id * num_threads_inti_id; i++)
+	// {
+		// std::cout<<out->cluster_id_of_point[i]<<", ";
+	// }
+	// std::cout<<std::endl;
 	cudaDeviceSynchronize();
 	cudaCheckError();
 
 	int *count_out;
-	cudaMallocManaged(&count_out, sizeof(int) * num_blocks * num_clusters);
+	cudaMallocManaged(&count_out, sizeof(int) *tmp);
 	cudaCheckError();
-	cudaMemset(count_out, 0, sizeof(int) * num_blocks * num_clusters);
+	cudaMemset(count_out, 0, sizeof(int) * tmp);
 	cudaCheckError();
-
-	while (1)
-	{
-
-		break;
-	}
 
 	// second reduce
 	timer_compute_centroids.Start();
 	// cudaDeviceSetCacheConfig(cudaFuncCachePreferShared);
+	if (num_blocks * num_threads * 2 != points->num_data_points)
+	{
+		std::cout << "11aaaaaaaaaaaaaaaaaaaaaa\n";
+	}
 	ReduceDataPoints<<<num_blocks, num_threads, shmem_size>>>(points, num_clusters, out, 1, count_out, points->num_data_points);
 	timer_compute_centroids.Stop();
 	timer_compute_centroids.Elapsed();
 	cudaCheckError();
 	// second reduce
 
-	num_threads = tmp / 2;
+	//jakby moze nie zliczal wszystkich punktow, bo nan jest naszem??
+
+	// num_threads = 1024 / 2;
 	shmem_size = num_threads * sizeof(float) * num_features * num_clusters + num_threads * sizeof(float) * num_clusters;
+	int new_num_block = std::max(out->num_data_points / num_threads / 2, 1);
+	// =new_num_block = lambda(new_num_block);
+	if (new_num_block == 1)
+	{
+		num_threads = std::min(tmp / 2, num_threads);
+	}
+	if (new_num_block * num_threads * 2 != out->num_data_points)
+	{
+		std::cout << "222aaaaaaaaaaaaaaaaaaaaaa\n";
+	}
+	shmem_size = num_threads * sizeof(float) * num_features * num_clusters + num_threads * sizeof(float) * num_clusters;
+	ReduceDataPoints<<<new_num_block, num_threads, shmem_size>>>(out, num_clusters, out, 0, count_out, out->num_data_points);
+	cudaDeviceSynchronize();
+	cudaCheckError();
 
 	timer_compute_centroids.Start();
-	ReduceDataPoints<<<1, num_threads, shmem_size>>>(out, num_clusters, out, 0, count_out, out->num_data_points);
+	int num_threads_last_sumup = new_num_block / 2 * centroids->num_data_points;
+	if (new_num_block > 1)
+	{
+		if (1 * 2 * num_threads_last_sumup != new_num_block * num_clusters)
+		{
+			std::cout << "333aaaaaaaaaaaaaaaaaaaaaa\n";
+		}
+		shmem_size = num_threads_last_sumup * sizeof(float) * num_features * num_clusters + num_threads_last_sumup * sizeof(float) * num_clusters;
+		ReduceDataPoints<<<1, num_threads_last_sumup, shmem_size>>>(out, num_clusters, out, 0, count_out, out->num_data_points);
+	}
 	timer_compute_centroids.Stop();
 	timer_compute_centroids.Elapsed();
 	cudaCheckError();
+	for (int i = 0; i < num_features * num_clusters; i++)
+	{
+		std::cout << count_out[i] << ", ";
+	}
+	std::cout << std::endl;
+	for (int f = 0; f < num_features; f++)
+		for (int c = 0; c < num_clusters; c++)
+		{
+			std::cout << out->features_array[f][c] << ", ";
+		}
+	std::cout << std::endl;
+
 	FindNewCentroids<<<1, num_features * num_clusters>>>(centroids, count_out, out);
 	cudaDeviceSynchronize();
+	cudaCheckError();
 
 	// for (int f = 0; f < num_features; f++)
 	// 	for (int c = 0; c < num_clusters; c++)

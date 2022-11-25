@@ -90,10 +90,10 @@ int main(int argc, char **argv)
 	// InitTimers();
 
 	int num_features = 3;
-	int num_points = 1 << 20;
-	int num_cluster = 3;
+	int num_points = 1 << 17;
+	int num_cluster = 6;
 
-	int num_epoches = 10;
+	int num_epoches = 6;
 	//________________________________THRUST________________________________
 	std::cout << "----------------THURST----------------" << std::endl;
 	timer_thurst_version.Start();
