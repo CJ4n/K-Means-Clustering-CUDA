@@ -1,9 +1,9 @@
 #include "cuda.h"
 
-struct GpuTimer
+class GpuTimer
 {
 
-//  cudaEvent_t start;
+      //  cudaEvent_t start;
       // cudaEvent_t stop;
       // float total_time;
       // GpuTimer()
@@ -37,8 +37,11 @@ struct GpuTimer
       //       total_time += elapsed;
       //       return elapsed;
       // }
+private:
       cudaEvent_t start;
       cudaEvent_t stop;
+
+public:
       float total_time;
       GpuTimer();
 

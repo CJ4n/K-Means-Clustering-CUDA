@@ -94,14 +94,42 @@ int main(int argc, char **argv)
 	int num_cluster = 6;
 
 	int num_epoches = 10;
+	//________________________________THRUST________________________________
+	std::cout << "----------------THURST----------------" << std::endl;
+	timer_thurst_version.Start();
 	// RunKMeansClustering(KMeansOneIterationGpuThurst, "THRUST", num_features, num_points, num_cluster, num_epoches);
+	timer_thurst_version.Stop();
+	timer_thurst_version.Elapsed();
+	std::cout << "THURST implementation: " << timer_thurst_version.total_time << std::endl;
+	//________________________________THRUST________________________________
+
+	//__________________________________CPU_________________________________
+	std::cout << "-----------------CPU------------------" << std::endl;
+	timer_cpu_version.Start();
 	RunKMeansClustering(KMeansOneIterationCpu, "CPU", num_features, num_points, num_cluster, num_epoches);
+	timer_cpu_version.Stop();
+	timer_cpu_version.Elapsed();
+	std::cout << "CPU implementation: " << timer_cpu_version.total_time << std::endl;
+	//__________________________________CPU_________________________________
+
+
+	//__________________________________GPU_________________________________
+	std::cout << "-----------------GPU------------------" << std::endl;
+	timer_gpu_version.Start();
 	RunKMeansClustering(KMeansOneIterationGpu, "GPU", num_features, num_points, num_cluster, num_epoches);
+	timer_gpu_version.Stop();
+	timer_gpu_version.Elapsed();
+
+	std::cout << "compute_centroids: " << timer_compute_centroids.total_time << "ms" << std::endl;
+	std::cout << "find_closest_centroids: " << timer_find_closest_centroids.total_time << "ms" << std::endl;
+	std::cout << "GPU implementation: " << timer_gpu_version.total_time << "ms" << std::endl;
+	//__________________________________GPU_________________________________
+
+	
+	// save generated points
 	DataPoints *point = GeneratePoints(num_features, num_points);
 	SaveCsv(point, "Input.csv");
 	DeallocateDataPoints(point);
-	std::cout << "compute_centroids: " << timer_compute_centroids.total_time << "ms" << std::endl;
-	std::cout << "find_closest_centroids: " << timer_find_closest_centroids.total_time << "ms" << std::endl;
 
 	// for (int num_features = 0; num_features < 9; num_features++)
 	// {
