@@ -179,7 +179,7 @@ void KMeansOneIterationGpu(DataPoints *points, DataPoints *centroids)
 	shmem_size = num_threads * sizeof(float) * num_features * num_clusters + num_threads * sizeof(float) * num_clusters;
 
 	timer_compute_centroids.Start();
-	// ReduceDataPoints<<<1, num_threads, shmem_size>>>(out, num_clusters, out, 0, count_out, out->num_data_points);
+	ReduceDataPoints<<<1, num_threads, shmem_size>>>(out, num_clusters, out, 0, count_out, out->num_data_points);
 	timer_compute_centroids.Stop();
 	timer_compute_centroids.Elapsed();
 	cudaCheckError();
