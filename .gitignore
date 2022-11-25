@@ -1,3 +1,5 @@
 build/*
-output.csv
+output*.csv
+Input.csv
 .vscode/*
+correctoutput
