@@ -90,8 +90,8 @@ int main(int argc, char **argv)
 	// InitTimers();
 
 	int num_features = 3;
-	int num_points = 1 << 17;
-	int num_cluster = 6;
+	int num_points = 1 << 18;
+	int num_cluster = 5;
 
 	int num_epoches = 6;
 	//________________________________THRUST________________________________
