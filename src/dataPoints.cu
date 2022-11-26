@@ -8,7 +8,7 @@
 #include <dataPoints.h>
 #include "cudaCheckError.h"
 
-DataPoints *AllocateDataPoints(int num_features, int num_data_points, bool malloc_managed )
+DataPoints *AllocateDataPoints(int num_features, int num_data_points, bool malloc_managed)
 {
 
 	DataPoints *point;
@@ -18,25 +18,32 @@ DataPoints *AllocateDataPoints(int num_features, int num_data_points, bool mallo
 	point->num_data_points = num_data_points;
 	cudaMallocManaged(&(point->cluster_id_of_point), sizeof(int) * num_data_points);
 	cudaCheckError();
+	cudaMemset(point->cluster_id_of_point, 0, sizeof(int) * num_data_points);
+	cudaCheckError();
 	// for(int i = 0;i<num_data_points;i++){
 	// 	point->cluster_id_of_point[i]=1;
 	// }
 	cudaMallocManaged(&(point->minDist_to_cluster), sizeof(float) * num_data_points);
 	cudaCheckError();
+	cudaMemset(point->minDist_to_cluster, 0, sizeof(float) * num_data_points);
+	cudaCheckError();
 
 	point->num_features = num_features;
 	cudaMallocManaged(&(point->features_array), sizeof(float *) * point->num_features);
 	cudaCheckError();
+	
 
 	for (int feature = 0; feature < point->num_features; ++feature)
 	{
 		cudaMallocManaged(&(point->features_array[feature]), sizeof(*(point->features_array[feature])) * point->num_data_points);
 		cudaCheckError();
+			cudaMemset(point->features_array[feature], 0, sizeof(*(point->features_array[feature])) * point->num_data_points);
+	cudaCheckError();
 	}
 	return point;
 }
 
-void DeallocateDataPoints(DataPoints *data_points )
+void DeallocateDataPoints(DataPoints *data_points)
 {
 	for (int f = 0; f < data_points->num_features; f++)
 	{
@@ -123,6 +130,6 @@ void SaveCsv(DataPoints *point, std::string file_name)
 
 		myfile << point->cluster_id_of_point[i] << std::endl;
 	}
-	
+
 	myfile.close();
 }

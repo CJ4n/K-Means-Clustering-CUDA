@@ -53,12 +53,12 @@ public:
 
       float Elapsed();
 };
-extern GpuTimer timer_find_closest_centroids;
-extern GpuTimer timer_compute_centroids;
-extern GpuTimer timer_memory_allocation;
-extern GpuTimer timer_gpu_version;
-extern GpuTimer timer_thurst_version;
-extern GpuTimer timer_cpu_version;
+extern GpuTimer *timer_find_closest_centroids;
+extern GpuTimer *timer_compute_centroids;
+extern GpuTimer *timer_memory_allocation_gpu;
+extern GpuTimer *timer_gpu_version;
+extern GpuTimer *timer_thurst_version;
+extern GpuTimer *timer_cpu_version;
 
 // static void InitTimers()
 // {

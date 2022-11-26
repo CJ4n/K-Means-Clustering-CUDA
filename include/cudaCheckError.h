@@ -1,4 +1,4 @@
-
+#include <iostream>
 #define cudaCheckError()                                                                    \
 	{                                                                                       \
 		cudaError_t e = cudaGetLastError();                                                 \
