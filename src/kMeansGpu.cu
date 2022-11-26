@@ -125,6 +125,7 @@ __global__ void InitPointsWithCentroidsIds(DataPoints *points, int k, int num_po
 #include <iomanip>
 void KMeansOneIterationGpu(DataPoints *points, DataPoints *centroids)
 {
+
 	const int num_features = points->num_features;
 	const int num_clusters = centroids->num_data_points;
 	int N = points->num_data_points;
@@ -132,12 +133,14 @@ void KMeansOneIterationGpu(DataPoints *points, DataPoints *centroids)
 	int num_blocks = (int)std::max(std::ceil((int)(N / (double)num_threads)), 1.0);
 	size_t shmem_size = num_threads * sizeof(float) * num_features * num_clusters + num_threads * sizeof(float) * num_clusters;
 
+	DataPoints *debug = AllocateDataPoints(num_features, num_clusters);
+	int sum_tot = 0;
+	
 	timer_find_closest_centroids->Start();
 	FindClosestCentroids<<<num_blocks, num_threads>>>(points, centroids);
 	timer_find_closest_centroids->Stop();
 	timer_find_closest_centroids->Elapsed();
 	cudaCheckError();
-	int sum_tot = 0;
 	if (0)
 	{
 		int *exact_num = new int[num_clusters];
@@ -160,7 +163,6 @@ void KMeansOneIterationGpu(DataPoints *points, DataPoints *centroids)
 		std::cout << std::endl
 				  << N << " total sum: " << sum_tot << std::endl;
 	}
-	DataPoints *debug = AllocateDataPoints(num_features, num_clusters);
 	std::cout<<std::setprecision(15);
 	num_blocks = std::ceil(num_blocks / 2.0);
 	// rewerite lambda
@@ -193,12 +195,8 @@ void KMeansOneIterationGpu(DataPoints *points, DataPoints *centroids)
 	cudaMemset(count_out, 0, sizeof(int) * num_blocks * num_clusters);
 	cudaCheckError();
 
-	// for(int i=0;i<num_blocks*num_clusters;i++){
-	// 	count_out[i]=1;
-	// }
-	// second reduce
+
 	timer_compute_centroids->Start();
-	// cudaDeviceSetCacheConfig(cudaFuncCachePreferShared);
 	if (DEBUG)
 		if (num_blocks * num_threads * 2 != points->num_data_points || out->num_data_points != num_clusters * num_blocks)
 		{
@@ -206,7 +204,6 @@ void KMeansOneIterationGpu(DataPoints *points, DataPoints *centroids)
 		}
 	// }
 	ReduceDataPoints<<<num_blocks, num_threads, shmem_size>>>(points, num_clusters, out, 1, count_out, N);
-	// jak gdyby to problem bo sa paski zer
 	timer_compute_centroids->Stop();
 	timer_compute_centroids->Elapsed();
 	cudaCheckError();
@@ -235,20 +232,7 @@ void KMeansOneIterationGpu(DataPoints *points, DataPoints *centroids)
 			}
 		std::cout << std::endl;
 	}
-	// for (int i = 0; i < tmp; i++)
-	// {
-	// 	// for (int c = 0; c < num_clusters; c++)
-	// 		for (int f = 0; f < num_features; f++)
-	// 	{
-	// 		{
-	// 			std::cout << out->features_array[f][i] << ", ";
-	// 		}
-	// 	}
-	// 	if ((i % num_clusters) == 0)
-	// 		std::cout << std::endl;
-	// }
-
-	// std::cout << std::endl;
+	
 	N = num_blocks * num_clusters;
 	// N=lambda(N);
 	const int new_num_block = std::ceil(N / num_threads / 2.0);
@@ -355,13 +339,12 @@ void KMeansOneIterationGpu(DataPoints *points, DataPoints *centroids)
 	// 	for (int c = 0; c < num_clusters; c++)
 	// 	{
 	// 		centroids->features_array[f][c] = out->features_array[f][c] / count_out[c];
-	// 		std::cout << centroids->features_array[f][c] << ", " << out->features_array[f][c] << ", " << count_out[c];
-	// 		std::cout << std::endl;
+	// 		// std::cout << centroids->features_array[f][c] << ", " << out->features_array[f][c] << ", " << count_out[c];
+	// 		// std::cout << std::endl;
 	// 	}
 
 	DeallocateDataPoints(out);
 	DeallocateDataPoints(debug);
-	// DeallocateDataPoints(out_new);
 	cudaFree(count_out);
 	cudaCheckError();
 }

@@ -42,10 +42,10 @@ DataPoints *GetCentroids(DataPoints *point, int num_clusters)
 	return centroids;
 }
 
-void kMeansClustering(DataPoints *point, int epochs, int num_clusters, void (*k_means_one_iteration_algorithm)(DataPoints *, DataPoints *))
+double kMeansClustering(DataPoints *point, int epochs, int num_clusters, void (*k_means_one_iteration_algorithm)(DataPoints *, DataPoints *))
 {
 	DataPoints *centroids = GetCentroids(point, num_clusters);
-
+	double final_error=0;
 	for (int epoch = 0; epoch < epochs; ++epoch)
 	{
 		// saveCsv(point, "train" + std::to_string(epoch) + ".csv");
@@ -54,7 +54,11 @@ void kMeansClustering(DataPoints *point, int epochs, int num_clusters, void (*k_
 			std::cout << "START EPOCH " << epoch << std::endl;
 		}
 		if (epoch > 0)
-			std::cout << "epoch: " << epoch << " Error: " << MeanSquareError(point, centroids) << std::endl;
+		{
+			final_error= MeanSquareError(point, centroids);
+
+			// std::cout << "epoch: " << epoch << " Error: " << final_error<< std::endl;
+		}
 		k_means_one_iteration_algorithm(point, centroids);
 		cudaDeviceSynchronize();
 
@@ -73,16 +77,18 @@ void kMeansClustering(DataPoints *point, int epochs, int num_clusters, void (*k_
 		}
 	}
 	DeallocateDataPoints(centroids);
+	return final_error;
 }
 
-void RunKMeansClustering(void (*k_means_one_iteration_algorithm)(DataPoints *, DataPoints *), std::string alg_name, int num_features, int num_points, int num_cluster, int num_epochs)
+double RunKMeansClustering(void (*k_means_one_iteration_algorithm)(DataPoints *, DataPoints *), std::string alg_name, int num_features, int num_points, int num_cluster, int num_epochs)
 {
 	std::srand(0);
 	DataPoints *point = GeneratePoints(num_features, num_points);
-	std::cout << "----------" + alg_name + "----------\n";
-	kMeansClustering(point, num_epochs, num_cluster, k_means_one_iteration_algorithm);
+	// std::cout << "----------" + alg_name + "----------\n";
+	double error = kMeansClustering(point, num_epochs, num_cluster, k_means_one_iteration_algorithm);
 	// SaveCsv(point, "Output" + alg_name + ".csv");
 	DeallocateDataPoints(point);
+	return error;
 }
 void InitTimers()
 {
@@ -150,15 +156,21 @@ int main(int argc, char **argv)
 
 	for (int num_features = 1; num_features < 5; num_features++)
 		for (int num_cluster = 1; num_cluster < 6; num_cluster++)
-		{
-			int num_points = 1 << 18;
-			// int num_cluster = 6;
+			for (int i = 17; i < 23; i++)
+			{
+				int num_points = 1 << i;
+				// int num_cluster = 6;
 
-			int num_epoches = 2;
-			std::cout << "features: " << num_features << ", clusters: " << num_cluster << std::endl;
-			RunKMeansClustering(KMeansOneIterationCpu, "CPU", num_features, num_points, num_cluster, num_epoches);
-			RunKMeansClustering(KMeansOneIterationGpu, "GPU", num_features, num_points, num_cluster, num_epoches);
-		}
+				int num_epoches = 2;
+				// std::cout << "features: " << num_features << ", clusters: " << num_cluster << std::endl;
+				double exact_error= RunKMeansClustering(KMeansOneIterationCpu, "CPU", num_features, num_points, num_cluster, num_epoches);
+				double gpu_error= RunKMeansClustering(KMeansOneIterationGpu, "GPU", num_features, num_points, num_cluster, num_epoches);
+				if(std::abs(exact_error-gpu_error)>10e-3){
+					std::cout<<"<<||||||||||||||||||||||||||||"<<"num_cluster: "<<num_cluster<<" num_feature: "<<num_features<<" num_points "<<num_points<<"||||||||||||||||||||||||||||"<<std::endl;
+					std::cout<<"exact_error: "<<exact_error<<std::endl;
+					std::cout<<"gpu_error:   "<<gpu_error<<std::endl;
+				}
+			}
 	DeleteTimers();
 	return 0;
 }
