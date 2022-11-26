@@ -232,19 +232,19 @@ void KMeansOneIterationGpu(DataPoints *points, DataPoints *centroids)
 	// N=lambda(N);
 	const int new_num_block = std::ceil(N / num_threads / 2.0);
 	shmem_size = num_threads * sizeof(float) * num_features * num_clusters + num_threads * sizeof(float) * num_clusters;
-	// if (new_num_block * num_threads * 2 != tmp)
-	// {
-	// 	std::cout << "222aaaaaaaaaaaaaaaaaaaaaa\n";
-	// }
+	if (new_num_block * num_threads * 2 != tmp)
+	{
+		std::cout << "222aaaaaaaaaaaaaaaaaaaaaa\n";
+	}
 
-	DataPoints *out_new = AllocateDataPoints(num_features, N);
-	int out_num_threads = (N < 1024) ? N : 1024;
-	int out_num_blocks = (N < 1024) ? 1 : std::ceil(N / out_num_threads);
-	InitPointsWithCentroidsIds<<<out_num_blocks, out_num_threads>>>(out_new, num_clusters, N);
-	cudaDeviceSynchronize();
-	cudaCheckError();
+	// DataPoints *out_new = AllocateDataPoints(num_features, N);
+	// int out_num_threads = (N < 1024) ? N : 1024;
+	// int out_num_blocks = (N < 1024) ? 1 : std::ceil(N / out_num_threads);
+	// InitPointsWithCentroidsIds<<<out_num_blocks, out_num_threads>>>(out_new, num_clusters, N);
+	// cudaDeviceSynchronize();
+	// cudaCheckError();
 	// N = 2 * new_num_block * num_threads;
-	ReduceDataPoints<<<new_num_block, num_threads, shmem_size>>>(out, num_clusters, out_new, 0, count_out, N);
+	ReduceDataPoints<<<new_num_block, num_threads, shmem_size>>>(out, num_clusters, out, 0, count_out, N);
 	cudaDeviceSynchronize();
 	cudaCheckError();
 	// sum_tot = 0;
@@ -269,32 +269,32 @@ void KMeansOneIterationGpu(DataPoints *points, DataPoints *centroids)
 		// 	count_out[i]=0;
 		// }
 		// problem z nieparzystumi liczbammi
-		ReduceDataPoints<<<1, num_threads_last_sumup, shmem_size>>>(out_new, num_clusters, out_new, 0, count_out, N);
+		ReduceDataPoints<<<1, num_threads_last_sumup, shmem_size>>>(out, num_clusters, out, 0, count_out, N);
 	}
 	timer_compute_centroids->Stop();
 	timer_compute_centroids->Elapsed();
 	cudaCheckError();
 
-	// FindNewCentroids<<<1, num_features * num_clusters>>>(centroids, count_out, out);
+	FindNewCentroids<<<1, num_features * num_clusters>>>(centroids, count_out, out);
 	cudaDeviceSynchronize();
 	cudaCheckError();
-	sum_tot = 0;
+	// sum_tot = 0;
 	// for (int i = 0; i < num_clusters * 1; i++)
 	// {
 	// 	sum_tot += count_out[i];
 	// 	std::cout << "coutout: " <<sum_tot << ",  ";
 	// }
 	// std::cout << "\n tot_sum" << sum_tot << "N: " << points->num_data_points << std::endl;
-	for (int f = 0; f < num_features; f++)
-		for (int c = 0; c < num_clusters; c++)
-		{
-			centroids->features_array[f][c] = out_new->features_array[f][c] / count_out[c];
-			// std::cout<<centroids->features_array[f][c] <<", "<< out->features_array[f][c]<<", "<<count_out[c];
-			// std::cout<<std::endl;
-		}
+	// for (int f = 0; f < num_features; f++)
+	// 	for (int c = 0; c < num_clusters; c++)
+	// 	{
+	// 		centroids->features_array[f][c] = out_new->features_array[f][c] / count_out[c];
+	// 		// std::cout<<centroids->features_array[f][c] <<", "<< out->features_array[f][c]<<", "<<count_out[c];
+	// 		// std::cout<<std::endl;
+	// 	}
 
 	DeallocateDataPoints(out);
-	DeallocateDataPoints(out_new);
+	// DeallocateDataPoints(out_new);
 	cudaFree(count_out);
 	cudaCheckError();
 }

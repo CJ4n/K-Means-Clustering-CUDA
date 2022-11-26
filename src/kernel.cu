@@ -53,7 +53,7 @@ void kMeansClustering(DataPoints *point, int epochs, int num_clusters, void (*k_
 		{
 			std::cout << "START EPOCH " << epoch << std::endl;
 		}
-
+	if(epoch>0)
 		std::cout << "epoch: " << epoch << " Error: " << MeanSquareError(point, centroids) << std::endl;
 		k_means_one_iteration_algorithm(point, centroids);
 		cudaDeviceSynchronize();
@@ -109,7 +109,7 @@ int main(int argc, char **argv)
 	InitTimers();
 
 	// int num_features = 3;
-	// int num_points = 1 << 19;
+	// int num_points = 1 << 19;// nadal jest problem z dużymi liczbami
 	// int num_cluster = 7;
 
 	// int num_epoches = 5;
@@ -148,7 +148,7 @@ int main(int argc, char **argv)
 	// save generated points
 	// DataPoints *point = GeneratePoints(num_features, num_points);
 	// SaveCsv(point, "Input.csv");
-	// DeallocateDataPoints(point);
+	// // DeallocateDataPoints(point);
 
 	for (int num_features = 1; num_features < 5; num_features++)
 	for (int num_cluster = 1; num_cluster < 6; num_cluster++)
