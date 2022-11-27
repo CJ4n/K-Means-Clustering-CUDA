@@ -8,7 +8,7 @@
 #include <dataPoints.h>
 #include "cudaCheckError.h"
 
-DataPoints *AllocateDataPoints(int num_features, int num_data_points, bool malloc_managed)
+DataPoints *AllocateDataPoints(int num_features, long num_data_points, bool malloc_managed)
 {
 
 	DataPoints *point;
@@ -24,14 +24,13 @@ DataPoints *AllocateDataPoints(int num_features, int num_data_points, bool mallo
 	point->num_features = num_features;
 	cudaMallocManaged(&(point->features_array), sizeof(*(point->features_array)) * point->num_features);
 	cudaCheckError();
-	
 
 	for (int feature = 0; feature < point->num_features; ++feature)
 	{
-		cudaMallocManaged(&(point->features_array[feature]), sizeof(**(point->features_array)) * point->num_data_points);
+		cudaMallocManaged(&(point->features_array[feature]), sizeof(MyDataType) * point->num_data_points);
 		cudaCheckError();
-			cudaMemset(point->features_array[feature], 0, sizeof(**(point->features_array)) * point->num_data_points);
-	cudaCheckError();
+		cudaMemset(point->features_array[feature], 0, sizeof(MyDataType) * point->num_data_points);
+		cudaCheckError();
 	}
 	return point;
 }

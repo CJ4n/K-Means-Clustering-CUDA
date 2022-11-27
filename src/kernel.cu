@@ -40,7 +40,7 @@ DataPoints *GetCentroids(DataPoints *point, int num_clusters)
 	}
 	return centroids;
 }
-#define DEBUG 0
+#define DEBUG 1
 
 double kMeansClustering(DataPoints *point, int epochs, int num_clusters, void (*k_means_one_iteration_algorithm)(DataPoints *, DataPoints *))
 {
@@ -122,15 +122,15 @@ int main(int argc, char **argv)
 	InitTimers();
 	if (!DEBUG)
 	{
-		int num_features = 2;
-		int num_points = 1 << 25; // nadal jest problem z dużymi liczbami
-		int num_cluster = 3;
+		int num_features = 3;
+		long num_points = 1 << 25; // nadal jest problem z dużymi liczbami
+		int num_cluster = 4;
 
-		int num_epoches = 5;
+		int num_epoches = 10;
 		//________________________________THRUST________________________________
 		std::cout << "----------------THURST----------------" << std::endl;
 		timer_thurst_version->Start();
-		// RunKMeansClustering(KMeansOneIterationGpuThurst, "THRUST", num_features, num_points, num_cluster, num_epoches);
+		//RunKMeansClustering(KMeansOneIterationGpuThurst, "THRUST", num_features, num_points, num_cluster, num_epoches);
 		timer_thurst_version->Stop();
 		timer_thurst_version->Elapsed();
 		std::cout << "THURST implementation: " << timer_thurst_version->total_time << std::endl;
@@ -139,7 +139,7 @@ int main(int argc, char **argv)
 		//__________________________________CPU_________________________________
 		std::cout << "-----------------CPU------------------" << std::endl;
 		timer_cpu_version->Start();
-		RunKMeansClustering(KMeansOneIterationCpu, "CPU", num_features, num_points, num_cluster, num_epoches);
+		// RunKMeansClustering(KMeansOneIterationCpu, "CPU", num_features, num_points, num_cluster, num_epoches);
 		timer_cpu_version->Stop();
 		timer_cpu_version->Elapsed();
 		std::cout << "CPU implementation: " << timer_cpu_version->total_time << std::endl;
@@ -163,15 +163,15 @@ int main(int argc, char **argv)
 	}
 	else
 	{
-		for (int num_features = 1; num_features < 5; num_features++)
-			for (int num_cluster = 1; num_cluster < 6; num_cluster++)
-				for (int i = 17; i < 25; i++)
+		for (int num_features = 1; num_features < 7; num_features++)
+			for (int num_cluster = 1; num_cluster < 7; num_cluster++)
+				for (int i = 17; i < 22; i++)
 				{
 					int num_points = 1 << i;
 					// int num_cluster = 6;
 
 					int num_epoches = 5;
-					std::cout << "features: " << num_features << ", clusters: " << num_cluster << std::endl;
+					std::cout << "features: " << num_features << ", clusters: " << num_cluster <<", N: "<<num_points<< std::endl;
 					double exact_error = RunKMeansClustering(KMeansOneIterationCpu, "CPU", num_features, num_points, num_cluster, num_epoches);
 					double gpu_error = RunKMeansClustering(KMeansOneIterationGpu, "GPU", num_features, num_points, num_cluster, num_epoches);
 					if (std::abs(exact_error - gpu_error) > 10e-7)
