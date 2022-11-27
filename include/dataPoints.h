@@ -20,12 +20,12 @@ struct Point
 
 };
  
+ typedef   double MyDataType;
 struct DataPoints
 {
-	float **features_array;
+	MyDataType **features_array;
 	int *cluster_id_of_point;
-	float *minDist_to_cluster;
-	int num_data_points;
+	long  num_data_points;
 	int num_features;
 };
 

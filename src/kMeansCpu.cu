@@ -10,16 +10,16 @@ void KMeansOneIterationCpu(DataPoints *points, DataPoints *centroids)
 {
 	// init
 	int *nPoints = (int *)malloc(sizeof(int) * centroids->num_data_points);
-	float **sum = (float **)malloc(sizeof(float *) * centroids->num_features);
+	double **sum = (double **)malloc(sizeof(*(points->features_array)) * centroids->num_features);
 
 	for (int feature = 0; feature < points->num_features; ++feature)
 	{
-		sum[feature] = (float *)malloc(sizeof(float) * centroids->num_data_points);
+		sum[feature] = (double *)malloc(sizeof(**(points->features_array)) * centroids->num_data_points);
 	}
 	for (int c = 0; c < centroids->num_data_points; ++c)
 	{
 		nPoints[c] = 0;
-		std::vector<float> tmp;
+		std::vector<double> tmp;
 
 		for (int feature = 0; feature < points->num_features; ++feature)
 		{
@@ -31,19 +31,18 @@ void KMeansOneIterationCpu(DataPoints *points, DataPoints *centroids)
 	// get nearest cluster
 	for (int p = 0; p < points->num_data_points; ++p)
 	{
+		float min_dist= __FLT_MAX__;
 		for (int c = 0; c < centroids->num_data_points; ++c)
 		{
 			float dist = Distance(centroids, points, p, c);
-			float min_dist = points->minDist_to_cluster[p];
 			if (dist < min_dist)
 			{
-				points->minDist_to_cluster[p] = dist;
+				min_dist = dist;
 				points->cluster_id_of_point[p] = c;
 			}
 		}
 		int cid = points->cluster_id_of_point[p];
 
-		points->minDist_to_cluster[p] = __DBL_MAX__;
 	}
 	// get nearest cluster
 
@@ -63,7 +62,7 @@ void KMeansOneIterationCpu(DataPoints *points, DataPoints *centroids)
 	{
 		for (int c = 0; c < centroids->num_data_points; ++c)
 		{
-			centroids->features_array[feature][c] = sum[feature][c] / nPoints[c];
+			centroids->features_array[feature][c] = sum[feature][c] / (double)nPoints[c];
 		}
 	}
 	// get centroids new location

@@ -40,7 +40,7 @@ DataPoints *GetCentroids(DataPoints *point, int num_clusters)
 	}
 	return centroids;
 }
-#define DEBUG 0
+#define DEBUG 1
 
 double kMeansClustering(DataPoints *point, int epochs, int num_clusters, void (*k_means_one_iteration_algorithm)(DataPoints *, DataPoints *))
 {
@@ -53,7 +53,7 @@ double kMeansClustering(DataPoints *point, int epochs, int num_clusters, void (*
 		{
 			// std::cout << "START EPOCH " << epoch << std::endl;
 		}
-		if (epoch > 0)
+		// if (epoch > 0)
 		{
 			final_error = MeanSquareError(point, centroids);
 			if (!DEBUG)
@@ -64,19 +64,19 @@ double kMeansClustering(DataPoints *point, int epochs, int num_clusters, void (*
 		k_means_one_iteration_algorithm(point, centroids);
 		cudaDeviceSynchronize();
 
-		if (0)
-		{
-			for (int feature = 0; feature < point->num_features; ++feature)
-			{
-				std::cout << "feature: " << feature << " |";
-				for (int c = 0; c < centroids->num_data_points; ++c)
-				{
-					std::cout << centroids->features_array[feature][c] << ", ";
-				}
-				std::cout << std::endl;
-			}
-			std::cout << std::endl;
-		}
+		// if (0)
+		// {
+		// 	for (int feature = 0; feature < point->num_features; ++feature)
+		// 	{
+		// 		std::cout << "feature: " << feature << " |";
+		// 		for (int c = 0; c < centroids->num_data_points; ++c)
+		// 		{
+		// 			std::cout << centroids->features_array[feature][c] << ", ";
+		// 		}
+		// 		std::cout << std::endl;
+		// 	}
+		// 	std::cout << std::endl;
+		// }
 	}
 	DeallocateDataPoints(centroids);
 	return final_error;
@@ -115,11 +115,14 @@ void DeleteTimers()
 
 int main(int argc, char **argv)
 {
+// 	std::cout<<"double "<<sizeof(double)<<std::endl;
+// 	std::cout<<"long "<<sizeof(long)<<std::endl;
+// 	std::cout<<"long double "<<sizeof(long double)<<std::endl;
 	std::cout << std::setprecision(15);
 	InitTimers();
 	if (!DEBUG)
 	{
-		int num_features = 3;
+		int num_features = 2;
 		int num_points = 1 << 22; // nadal jest problem z dużymi liczbami
 		int num_cluster = 3;
 
@@ -162,7 +165,7 @@ int main(int argc, char **argv)
 	{
 		for (int num_features = 1; num_features < 5; num_features++)
 			for (int num_cluster = 1; num_cluster < 6; num_cluster++)
-				for (int i = 17; i < 23; i++)
+				for (int i = 17; i < 25; i++)
 				{
 					int num_points = 1 << i;
 					// int num_cluster = 6;
@@ -173,7 +176,7 @@ int main(int argc, char **argv)
 					double gpu_error = RunKMeansClustering(KMeansOneIterationGpu, "GPU", num_features, num_points, num_cluster, num_epoches);
 					if (std::abs(exact_error - gpu_error) > 10e-3)
 					{
-						std::cout << "<<||||||||||||||||||||||||||||"
+						std::cout << "<<|||||||||||||||||||||||||dfd|||"
 								  << "num_cluster: " << num_cluster << " num_feature: " << num_features << " num_points " << num_points << "||||||||||||||||||||||||||||" << std::endl;
 						std::cout << "exact_error: " << exact_error << std::endl;
 						std::cout << "gpu_error:   " << gpu_error << std::endl;

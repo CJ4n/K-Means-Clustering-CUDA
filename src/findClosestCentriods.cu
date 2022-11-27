@@ -3,9 +3,14 @@
 
 __global__ void FindClosestCentroids(DataPoints *points, DataPoints *centroids)
 {
-	int tid = threadIdx.x;
+	// int tid = threadIdx.x;
 	int gid = blockIdx.x * blockDim.x + threadIdx.x;
-
+	float min_dist = __FLT_MAX__;
+	if (gid >= points->num_data_points)
+	{
+		return;
+	}
+	
 	for (int c = 0; c < centroids->num_data_points; ++c)
 	{
 		if (points->num_data_points < gid)
@@ -19,14 +24,10 @@ __global__ void FindClosestCentroids(DataPoints *points, DataPoints *centroids)
 			dist += tmp * tmp;
 		}
 
-		if (dist < points->minDist_to_cluster[gid])
+		if (dist < min_dist)
 		{
-			points->minDist_to_cluster[gid] = dist;
+			min_dist = dist;
 			points->cluster_id_of_point[gid] = c;
 		}
-	}
-	if (points->num_data_points > gid)
-	{
-		points->minDist_to_cluster[gid] = __FLT_MAX__;
 	}
 }

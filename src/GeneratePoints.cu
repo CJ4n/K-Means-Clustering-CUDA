@@ -11,7 +11,6 @@ DataPoints *GeneratePoints(int num_features, int num_points)
     for (int p = 0; p < num_points; ++p)
     {
         data->cluster_id_of_point[p] = -1;
-        data->minDist_to_cluster[p] = __DBL_MAX__;
         for (int f = 0; f < num_features; ++f)
         {
             int range = MAX_FEATURE_VALUE - MIN_FEATURE_VALUE + 1;
