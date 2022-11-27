@@ -22,7 +22,6 @@ DataPoints *AllocateDataPoints(int num_features, int num_data_points, bool mallo
 	cudaCheckError();
 
 	point->num_features = num_features;
-	std::cout<<"sdsfsddf "<<sizeof(*(point->features_array))<<"dfd \n";
 	cudaMallocManaged(&(point->features_array), sizeof(*(point->features_array)) * point->num_features);
 	cudaCheckError();
 	

@@ -40,7 +40,7 @@ DataPoints *GetCentroids(DataPoints *point, int num_clusters)
 	}
 	return centroids;
 }
-#define DEBUG 1
+#define DEBUG 0
 
 double kMeansClustering(DataPoints *point, int epochs, int num_clusters, void (*k_means_one_iteration_algorithm)(DataPoints *, DataPoints *))
 {
@@ -123,7 +123,7 @@ int main(int argc, char **argv)
 	if (!DEBUG)
 	{
 		int num_features = 2;
-		int num_points = 1 << 22; // nadal jest problem z dużymi liczbami
+		int num_points = 1 << 25; // nadal jest problem z dużymi liczbami
 		int num_cluster = 3;
 
 		int num_epoches = 5;
@@ -171,10 +171,10 @@ int main(int argc, char **argv)
 					// int num_cluster = 6;
 
 					int num_epoches = 5;
-					// std::cout << "features: " << num_features << ", clusters: " << num_cluster << std::endl;
+					std::cout << "features: " << num_features << ", clusters: " << num_cluster << std::endl;
 					double exact_error = RunKMeansClustering(KMeansOneIterationCpu, "CPU", num_features, num_points, num_cluster, num_epoches);
 					double gpu_error = RunKMeansClustering(KMeansOneIterationGpu, "GPU", num_features, num_points, num_cluster, num_epoches);
-					if (std::abs(exact_error - gpu_error) > 10e-3)
+					if (std::abs(exact_error - gpu_error) > 10e-7)
 					{
 						std::cout << "<<|||||||||||||||||||||||||dfd|||"
 								  << "num_cluster: " << num_cluster << " num_feature: " << num_features << " num_points " << num_points << "||||||||||||||||||||||||||||" << std::endl;
