@@ -50,7 +50,7 @@ double kMeansClustering(DataPoints *point, int epochs, int num_clusters, void (*
 	final_error = MeanSquareError(point, centroids);
 	if (!DEBUG)
 	{
-		std::cout << "epoch: " << -1 << " Error: " << final_error << std::endl;
+		std::cout << "EPOCH: " << -1 << " ERROR: " << final_error << std::endl;
 	}
 	for (int epoch = 0; epoch < epochs; ++epoch)
 	{
@@ -60,7 +60,7 @@ double kMeansClustering(DataPoints *point, int epochs, int num_clusters, void (*
 		final_error = MeanSquareError(point, centroids);
 		if (!DEBUG)
 		{
-			std::cout << "epoch: " << epoch << " Error: " << final_error << std::endl;
+			std::cout << "EPOCH: " << epoch << " ERROR: " << final_error << std::endl;
 		}
 	}
 	DeallocateDataPoints(centroids);
@@ -118,7 +118,6 @@ int main(int argc, char **argv)
 		// RunKMeansClustering(KMeansOneIterationGpuThurst, "THRUST", constants::num_features, constants::num_points, constants::num_cluster, constants::num_epoches);
 		timer_thurst_version->Stop();
 		timer_thurst_version->Elapsed();
-		std::cout << "THURST implementation: " << timer_thurst_version->total_time << std::endl;
 		//________________________________THRUST________________________________
 
 		//__________________________________CPU_________________________________
@@ -127,7 +126,6 @@ int main(int argc, char **argv)
 		RunKMeansClustering(KMeansOneIterationCpu, "CPU", constants::num_features, constants::num_points, constants::num_cluster, constants::num_epoches);
 		timer_cpu_version->Stop();
 		timer_cpu_version->Elapsed();
-		std::cout << "CPU implementation: " << timer_cpu_version->total_time << std::endl;
 		//__________________________________CPU_________________________________
 
 		//__________________________________GPU_________________________________
@@ -136,11 +134,16 @@ int main(int argc, char **argv)
 		RunKMeansClustering(KMeansOneIterationGpu, "GPU", constants::num_features, constants::num_points, constants::num_cluster, constants::num_epoches);
 		timer_gpu_version->Stop();
 		timer_gpu_version->Elapsed();
-
-		std::cout << "compute_centroids: " << timer_compute_centroids->total_time << "ms" << std::endl;
-		std::cout << "find_closest_centroids: " << timer_find_closest_centroids->total_time << "ms" << std::endl;
-		std::cout << "GPU implementation: " << timer_gpu_version->total_time << "ms" << std::endl;
 		//__________________________________GPU_________________________________
+
+
+		std::cout << "THURST implementation:  " << timer_thurst_version->total_time<< "ms" << std::endl;
+
+		std::cout << "CPU implementation:     " << timer_cpu_version->total_time << "ms"<< std::endl;
+
+		std::cout << "GPU implementation:     " << timer_gpu_version->total_time << "ms" << std::endl;
+		std::cout << "compute_centroids:      " << timer_compute_centroids->total_time << "ms" << std::endl;
+		std::cout << "find_closest_centroids: " << timer_find_closest_centroids->total_time << "ms" << std::endl;
 		// save generated points
 		// DataPoints *point = GeneratePoints(num_features, num_points);
 		// SaveCsv(point, "Input.csv");

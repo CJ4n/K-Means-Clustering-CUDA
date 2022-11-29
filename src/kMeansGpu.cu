@@ -232,7 +232,8 @@ __global__ void InitPointsWithCentroidsIds(DataPoints *points, int k, int num_po
 	}
 	points->cluster_id_of_point[gid] = gid % k;
 }
-#define DEBUG 1
+
+#define DEBUG 0
 #define MAX_SHM_SIZE 48 * 1024
 #define DEFAULT_NUM_THREADS 1024l
 #define CALCULATE_SHM_SIZE(num_features, num_clusters, num_threads) num_threads *(num_features + 1) * num_clusters * sizeof(MyDataType)
@@ -261,7 +262,7 @@ void ReduceFeature(int w, DataPoints *feature, int num_features, int num_cluster
 
 void debugFunction(DataPoints *points, DataPoints *debug, int num_features, int num_clusters, int num_blocks, int num_threads, int N, std::string label)
 {
-	std::cout << "---------" << label << "---------" << std::endl;
+	std::cout << "\n---------" << label << "---------" << std::endl;
 	long sum_tot = 0;
 	// Gets exact sum by feature and clusters
 	for (int f = 0; f < num_features; f++)
@@ -279,7 +280,7 @@ void debugFunction(DataPoints *points, DataPoints *debug, int num_features, int 
 		}
 	}
 
-	std::cout << " correct (points)\n{\n";
+	std::cout << " correct (points)\n{\n	";
 	double sum_tot_v2 = 0;
 	for (int c = 0; c < num_clusters; c++)
 	{
@@ -295,11 +296,6 @@ void debugFunction(DataPoints *points, DataPoints *debug, int num_features, int 
 
 	// Gets redcued sum by feature and cluster
 	long sum_tot_reduced = 0;
-	for (int f = 0; f < num_features; f++)
-		for (int c = 0; c < num_clusters; c++)
-		{
-			debug->features_array[f][c] = 0;
-		}
 
 	for (int i = 0; i < N; i++)
 	{
@@ -309,7 +305,7 @@ void debugFunction(DataPoints *points, DataPoints *debug, int num_features, int 
 			sum_tot_reduced += reduced_points->features_array[f][i];
 		}
 	}
-	std::cout << "Calculated points (reduced_points)\n{\n";
+	std::cout << "Calculated points (reduced_points)\n{\n	";
 
 	double sum_tot_reduced_v2 = 0;
 	for (int c = 0; c < num_clusters; c++)
@@ -337,18 +333,15 @@ void debugFunction(DataPoints *points, DataPoints *debug, int num_features, int 
 	long exact_points_count = 0;
 	for (int i = 0; i < points->num_data_points; ++i)
 	{
-		for (int c = 0; c < num_clusters; ++c)
-		{
-			count_check[points->cluster_id_of_point[i]]++;
-		}
+		count_check[points->cluster_id_of_point[i]]++;
 	}
-	std::cout << "Exact ids count\n{\n";
+	std::cout << "Exact ids count\n{\n	";
 	for (int c = 0; c < num_clusters; ++c)
 	{
 		std::cout << count_check[c] << ", ";
 		exact_points_count += count_check[c];
 	}
-	std::cout << "}\n";
+	std::cout << "\n}\n";
 	// Gets exact count of ids
 
 	memset(count_check, 0, sizeof(int) * num_clusters);
@@ -363,12 +356,12 @@ void debugFunction(DataPoints *points, DataPoints *debug, int num_features, int 
 			reduced_points_count += ids_count[i * num_clusters + c];
 		}
 	}
-	std::cout << "Reduced ids count\n{\n";
+	std::cout << "Reduced ids count\n{\n	";
 	for (int c = 0; c < num_clusters; ++c)
 	{
 		std::cout << count_check[c] << ", ";
 	}
-	std::cout << "}\n";
+	std::cout << "\n}\n";
 	// Gets reduced count of ids
 
 	std::cout << "number of points (exact_points_count):   " << exact_points_count << std::endl;
@@ -456,65 +449,14 @@ void KMeansOneIterationGpu(DataPoints *points, DataPoints *centroids)
 
 	if (DEBUG)
 	{
-		debugFunction(points, debug, num_features, num_clusters, num_blocks, num_threads, num_reduced_points, "BEFORE FIRST REDUCE");
-		// long sum_tot = 0;
-		// for (int f = 0; f < num_features; f++)
-		// 	for (int c = 0; c < num_clusters; c++)
-		// 	{
-		// 		debug->features_array[f][c] = 0;
-		// 	}
-		// sum_tot = 0;
-
-		// for (int i = 0; i < points->num_data_points; i++)
-		// {
-		// 	for (int f = 0; f < num_features; f++)
-		// 	{
-		// 		debug->features_array[f][points->cluster_id_of_point[i]] += points->features_array[f][i];
-		// 		sum_tot += points->features_array[f][i];
-		// 	}
-		// }
-		// double cc[5][5];
-		// for (int c = 0; c < num_clusters; c++)
-		// 	for (int f = 0; f < num_features; f++)
-		// 	{
-		// 		cc[f][c] = 0;
-		// 	}
-		// for (int i = 0; i < points->num_data_points; i++)
-		// {
-		// 	for (int f = 0; f < num_features; f++)
-		// 	{
-		// 		cc[f][points->cluster_id_of_point[i]] += points->features_array[f][i];
-		// 		// sum_tot += points->features_array[f][i];
-		// 	}
-		// }
-
-		// for (int c = 0; c < num_clusters; c++)
-		// 	for (int f = 0; f < num_features; f++)
-		// 	{
-		// 		std::cout << cc[f][c] << ", ";
-		// 	}
-		// std::cout << " correct\n";
-		// double sum_tot_v2 = 0;
-		// for (int c = 0; c < num_clusters; c++)
-		// 	for (int f = 0; f < num_features; f++)
-		// 	{
-		// 		std::cout << debug->features_array[f][c] << ", ";
-		// 		sum_tot_v2 += debug->features_array[f][c];
-		// 		debug->features_array[f][c] = 0;
-		// 	}
-		// std::cout << "sumed all points: " << sum_tot << std::endl;
-		// std::cout << "sumed all points vv22: " << sum_tot_v2 << std::endl;
-		// if (num_blocks * num_threads * 2 < N || reduced_points->num_data_points != num_clusters * num_blocks)
-		// {
-		// 	std::cout << "11aaaaaaaaaaaaaaaaaaaaaa\n";
-		// }
+		debugFunction(points, debug, num_features, num_clusters, num_blocks, num_threads, num_clusters * num_blocks, "BEFORE FIRST REDUCE");
 	}
 	// reduce points in `points` and store them in `reduced_poitsn`
 	timer_compute_centroids->Start();
 	ReduceDataPoints<<<num_blocks, num_threads, shmem_size>>>(points->features_array,
 															  points->cluster_id_of_point, reduced_points->features_array,
 															  1, ids_count, N, num_features, num_clusters);
-	// ReduceFeature(0,points,num_features,num_clusters,N,1,ids_count);
+	// ReduceFeature(0, points, num_features, num_clusters, N, 1, ids_count, num_blocks, num_threads);
 
 	timer_compute_centroids->Stop();
 	timer_compute_centroids->Elapsed();
@@ -523,58 +465,17 @@ void KMeansOneIterationGpu(DataPoints *points, DataPoints *centroids)
 
 	if (DEBUG)
 	{
-		debugFunction(points, debug, num_features, num_clusters, num_blocks, num_threads, num_blocks, "BEFORE WHILE REDUCE");
+		debugFunction(points, debug, num_features, num_clusters, num_blocks, num_threads, num_clusters * num_blocks, "BEFORE WHILE REDUCE");
 	}
 	// further reduce points in `reduced_points`, until there will be no more then  `num_threads * 2` poitns left to reduce
 	while (num_blocks * num_clusters > num_threads * 2)
 	{
-
-		// if (DEBUG)
-		// {
-		// 	debugFunction(points, debug, num_features, num_clusters, num_blocks, num_threads, N, "WHILE REDUCE");
-
-		// 	// long sum_tot = 0;
-		// 	// for (int i = 0; i < num_clusters * num_blocks; i++)
-		// 	// {
-		// 	// 	sum_tot += ids_count[i];
-		// 	// }
-		// 	// std::cout << "tot_sum " << sum_tot << " N: " << points->num_data_points << std::endl;
-
-		// 	// for (int i = 0; i < num_clusters * num_blocks; i++)
-		// 	// {
-		// 	// 	for (int f = 0; f < num_features; f++)
-		// 	// 	{
-		// 	// 		debug->features_array[f][reduced_points->cluster_id_of_point[i]] += reduced_points->features_array[f][i];
-		// 	// 	}
-		// 	// }
-
-		// 	// sum_tot = 0;
-		// 	// for (int f = 0; f < num_features; f++)
-		// 	// 	for (int c = 0; c < num_clusters; c++)
-		// 	// 	{
-		// 	// 		std::cout << debug->features_array[f][c] << ", ";
-		// 	// 		sum_tot += debug->features_array[f][c];
-		// 	// 		debug->features_array[f][c] = 0;
-		// 	// 	}
-		// 	// std::cout << "sumed all points: " << sum_tot << std::endl;
-		// 	// if (num_blocks * num_threads * 2 < N)
-		// 	// {
-		// 	// 	std::cout << "222aaaaaaaaaaaaaaaaaaaaaa\n";
-		// 	// }
-		// }
 		N = num_blocks * num_clusters;
 		// N=lambda(N);
 		num_blocks = std::ceil(N / num_threads / 2.0);
 		shmem_size = CALCULATE_SHM_SIZE(num_features, num_clusters, num_threads);
 
-		// cudaDeviceSynchronize();
 		timer_compute_centroids->Start();
-
-		// for (int f = 0; f < num_features; ++f)
-		// {
-		// 	ReduceFeature(f, points->features_array[f], points->cluster_id_of_point, reduced_points->features_array[f], num_features, num_clusters, N, 0, ids_count);
-		// }
-
 		ReduceDataPoints<<<num_blocks, num_threads, shmem_size>>>(reduced_points->features_array,
 																  reduced_points->cluster_id_of_point, reduced_points->features_array,
 																  0, ids_count, N, num_features, num_clusters);
@@ -585,7 +486,7 @@ void KMeansOneIterationGpu(DataPoints *points, DataPoints *centroids)
 	}
 	if (DEBUG)
 	{
-		debugFunction(points, debug, num_features, num_clusters, num_blocks, num_threads, num_blocks, "AFTER WHILE REDUCE");
+		debugFunction(points, debug, num_features, num_clusters, num_blocks, num_threads, num_blocks * num_clusters, "AFTER WHILE REDUCE");
 	}
 	// further reduce points in `reduced_points`, until there will be no more then  `num_threads * 2` poitns left to reduce
 
@@ -595,41 +496,7 @@ void KMeansOneIterationGpu(DataPoints *points, DataPoints *centroids)
 		N = num_clusters * num_blocks;
 		int num_threads_last_sumup = std::ceil(N / 2.0);
 		num_threads_last_sumup = lambda(num_threads_last_sumup);
-		// if (DEBUG)
-		// {
 
-		// 	debugFunction(points, debug, num_blocks, num_clusters, 1, num_threads_last_sumup, N, "LAST REDUCE");
-
-		// 	// long sum_tot = 0;
-		// 	// sum_tot = 0;
-		// 	// for (int i = 0; i < num_blocks * num_clusters; i++)
-		// 	// {
-		// 	// 	sum_tot += ids_count[i];
-		// 	// 	// std::cout << "coutout: " << count_out[i] << ",  ";
-		// 	// }
-		// 	// std::cout << "tot_sum " << sum_tot << " N: " << points->num_data_points << std::endl;
-
-		// 	// for (int i = 0; i < num_clusters * num_blocks; i++)
-		// 	// {
-		// 	// 	for (int f = 0; f < num_features; f++)
-		// 	// 	{
-		// 	// 		debug->features_array[f][reduced_points->cluster_id_of_point[i]] += reduced_points->features_array[f][i];
-		// 	// 	}
-		// 	// }
-		// 	// sum_tot = 0;
-		// 	// for (int f = 0; f < num_features; f++)
-		// 	// 	for (int c = 0; c < num_clusters; c++)
-		// 	// 	{
-		// 	// 		std::cout << debug->features_array[f][c] << ", ";
-		// 	// 		sum_tot += debug->features_array[f][c];
-		// 	// 		debug->features_array[f][c] = 0;
-		// 	// 	}
-		// 	// std::cout << "sumed all points: " << sum_tot << std::endl;
-		// 	// if (1 * 2 * num_threads_last_sumup < N)
-		// 	// {
-		// 	// 	std::cout << "333aaaaaaaaaaaaaaaaaaaaaa\n";
-		// 	// }
-		// }
 		shmem_size = CALCULATE_SHM_SIZE(num_features, num_clusters, num_threads_last_sumup);
 		timer_compute_centroids->Start();
 		ReduceDataPoints<<<1, num_threads_last_sumup, shmem_size>>>(reduced_points->features_array,
@@ -640,7 +507,7 @@ void KMeansOneIterationGpu(DataPoints *points, DataPoints *centroids)
 		cudaCheckError();
 		if (DEBUG)
 		{
-			debugFunction(points, debug, num_features, num_clusters, 1, num_threads_last_sumup, 1, "AFTER LAST REDUCE");
+			debugFunction(points, debug, num_features, num_clusters, 1, num_threads_last_sumup, 1 * num_clusters, "AFTER LAST REDUCE");
 		}
 	}
 	// last reduce, reduce all remaining points
@@ -650,77 +517,6 @@ void KMeansOneIterationGpu(DataPoints *points, DataPoints *centroids)
 	cudaDeviceSynchronize();
 	cudaCheckError();
 	// find new centroids
-
-	// if (DEBUG)
-	// {
-
-	// 	debugFunction(points, debug, num_features, num_clusters, -1, -1, num_clusters, "AFTER LAST REDUCE");
-	// 	// long sum_tot = 0;
-	// 	// sum_tot = 0;
-	// 	// for (int i = 0; i < num_clusters * 1; i++)
-	// 	// {
-	// 	// 	sum_tot += ids_count[i];
-	// 	// 	// std::cout << "coutout: " << count_out[i] << ",  ";
-	// 	// }
-	// 	// std::cout << "tot_sum " << sum_tot << " N: " << points->num_data_points << std::endl;
-
-	// 	// for (int i = 0; i < num_clusters * 1; i++)
-	// 	// {
-	// 	// 	for (int f = 0; f < num_features; f++)
-	// 	// 	{
-	// 	// 		debug->features_array[f][reduced_points->cluster_id_of_point[i]] += reduced_points->features_array[f][i];
-	// 	// 	}
-	// 	// }
-	// 	// sum_tot = 0;
-	// 	// for (int f = 0; f < num_features; f++)
-	// 	// 	for (int c = 0; c < num_clusters; c++)
-	// 	// 	{
-	// 	// 		std::cout << debug->features_array[f][c] << ", ";
-	// 	// 		sum_tot += debug->features_array[f][c];
-	// 	// 		debug->features_array[f][c] = 0;
-	// 	// 	}
-	// 	// std::cout << "sumed all points: " << sum_tot << std::endl;
-
-	// 	// for (int i = 0; i < points->num_data_points; i++)
-	// 	// {
-	// 	// 	for (int f = 0; f < num_features; f++)
-	// 	// 	{
-	// 	// 		debug->features_array[f][points->cluster_id_of_point[i]] += points->features_array[f][i];
-	// 	// 	}
-	// 	// }
-	// 	// sum_tot = 0;
-	// 	// for (int f = 0; f < num_features; f++)
-	// 	// 	for (int c = 0; c < num_clusters; c++)
-	// 	// 	{
-	// 	// 		std::cout << debug->features_array[f][c] << ", ";
-	// 	// 		sum_tot += debug->features_array[f][c];
-	// 	// 		debug->features_array[f][c] = 0;
-	// 	// 	}
-	// 	// std::cout << "sumed all points: " << sum_tot << std::endl;
-
-	// 	// int *count_check = (int *)malloc(sizeof(int) * num_clusters);
-	// 	// memset(count_check, 0, sizeof(int) * num_clusters);
-	// 	// for (int i = 0; i < points->num_data_points; i++)
-	// 	// {
-	// 	// 	count_check[points->cluster_id_of_point[i]]++;
-	// 	// }
-	// 	// std::cout << "exact_count: ";
-	// 	// for (int c = 0; c < num_clusters; c++)
-	// 	// {
-	// 	// 	std::cout << count_check[c] << ", ";
-	// 	// }
-	// 	// std::cout << std::endl
-	// 	// 		  << "count_out:   ";
-	// 	// for (int c = 0; c < num_clusters; c++)
-	// 	// {
-	// 	// 	std::cout << ids_count[c] << ", ";
-	// 	// }
-	// 	// std::cout << std::endl;
-
-	// 	// std::cout << std::endl;
-	// 	// std::cout << std::endl;
-	// 	// free(count_check);
-	// }
 
 	// cleanup memory
 	if (cur_epoch == constants::num_epoches - 1)
