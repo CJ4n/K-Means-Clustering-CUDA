@@ -47,37 +47,21 @@ double kMeansClustering(DataPoints *point, int epochs, int num_clusters, void (*
 {
 	DataPoints *centroids = GetCentroids(point, num_clusters);
 	double final_error = 0;
+	final_error = MeanSquareError(point, centroids);
+	if (!DEBUG)
+	{
+		std::cout << "epoch: " << -1 << " Error: " << final_error << std::endl;
+	}
 	for (int epoch = 0; epoch < epochs; ++epoch)
 	{
-		// saveCsv(point, "train" + std::to_string(epoch) + ".csv");
-		// if (DEBUG)
-		{
-			// std::cout << "START EPOCH " << epoch << std::endl;
-		}
-		// if (epoch > 0)
-		{
-			final_error = MeanSquareError(point, centroids);
-			if (!DEBUG)
-			{
-				std::cout << "epoch: " << epoch << " Error: " << final_error << std::endl;
-			}
-		}
+
 		k_means_one_iteration_algorithm(point, centroids);
 		cudaDeviceSynchronize();
-
-		// if (0)
-		// {
-		// 	for (int feature = 0; feature < point->num_features; ++feature)
-		// 	{
-		// 		std::cout << "feature: " << feature << " |";
-		// 		for (int c = 0; c < centroids->num_data_points; ++c)
-		// 		{
-		// 			std::cout << centroids->features_array[feature][c] << ", ";
-		// 		}
-		// 		std::cout << std::endl;
-		// 	}
-		// 	std::cout << std::endl;
-		// }
+		final_error = MeanSquareError(point, centroids);
+		if (!DEBUG)
+		{
+			std::cout << "epoch: " << epoch << " Error: " << final_error << std::endl;
+		}
 	}
 	DeallocateDataPoints(centroids);
 	return final_error;
@@ -131,7 +115,7 @@ int main(int argc, char **argv)
 		//________________________________THRUST________________________________
 		std::cout << "----------------THURST----------------" << std::endl;
 		timer_thurst_version->Start();
-		//RunKMeansClustering(KMeansOneIterationGpuThurst, "THRUST", constants::num_features, constants::num_points, constants::num_cluster, constants::num_epoches);
+		// RunKMeansClustering(KMeansOneIterationGpuThurst, "THRUST", constants::num_features, constants::num_points, constants::num_cluster, constants::num_epoches);
 		timer_thurst_version->Stop();
 		timer_thurst_version->Elapsed();
 		std::cout << "THURST implementation: " << timer_thurst_version->total_time << std::endl;
@@ -140,7 +124,7 @@ int main(int argc, char **argv)
 		//__________________________________CPU_________________________________
 		std::cout << "-----------------CPU------------------" << std::endl;
 		timer_cpu_version->Start();
-		//RunKMeansClustering(KMeansOneIterationCpu, "CPU", constants::num_features, constants::num_points, constants::num_cluster, constants::num_epoches);
+		RunKMeansClustering(KMeansOneIterationCpu, "CPU", constants::num_features, constants::num_points, constants::num_cluster, constants::num_epoches);
 		timer_cpu_version->Stop();
 		timer_cpu_version->Elapsed();
 		std::cout << "CPU implementation: " << timer_cpu_version->total_time << std::endl;
@@ -164,11 +148,11 @@ int main(int argc, char **argv)
 	}
 	else
 	{
-		for ( constants::num_features = 1; constants::num_features < 7; constants::num_features++)
-			for ( constants::num_cluster = 3; constants::num_cluster < 7; constants::num_cluster++)
+		for (constants::num_features = 1; constants::num_features < 7; constants::num_features++)
+			for (constants::num_cluster = 3; constants::num_cluster < 7; constants::num_cluster++)
 				for (int i = 17; i < 22; i++)
 				{
-					  constants::num_points = 1 << i;
+					constants::num_points = 1 << i;
 					// int num_cluster = 6;
 
 					// const int num_epoches = 5;
