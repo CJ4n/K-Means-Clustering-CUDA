@@ -1,27 +1,17 @@
-
-
-// #include <cstdlib>
+#include <ctime> 
 #include <cuda.h>
+#include <iostream> 
 #include <math.h>
-#include <ctime> // for a random seed
-// #include <fstream>	// for file-reading
-#include <iostream> // for file-reading
-// #include <sstream>	// for file-reading
 #include <vector>
-// #include <math.h>
-// #include <thrust/host_vector.h>
-// #include <thrust/device_vector.h>
-// #include <thrust/execution_policy.h>
-// #include <thrust/reduce.h>
-#include "dataPoints.h"
 
+#include "Constants.h"
 #include "cudaCheckError.h"
+#include "dataPoints.h"
+#include "GeneratePoints.h"
 #include "kMeansCpu.h"
 #include "kMeansGpuThrust.h"
 #include "kMeansGpu.h"
-#include "GeneratePoints.h"
 #include "timer.h"
-#include "Constants.h"
 
 #define RANDOM_CENTROID_INITIALIZATION 0
 
@@ -71,9 +61,7 @@ double RunKMeansClustering(void (*k_means_one_iteration_algorithm)(DataPoints *,
 {
 	std::srand(0);
 	DataPoints *point = GeneratePoints(num_features, num_points);
-	// std::cout << "----------" + alg_name + "----------\n";
 	double error = kMeansClustering(point, num_epochs, num_cluster, k_means_one_iteration_algorithm);
-	// SaveCsv(point, "Output" + alg_name + ".csv");
 	DeallocateDataPoints(point);
 	return error;
 }
@@ -98,20 +86,14 @@ void DeleteTimers()
 }
 #include <iomanip>
 
+
+// TODO: zmusic do dzialanie reduce by feature
 int main(int argc, char **argv)
 {
-	// 	std::cout<<"double "<<sizeof(double)<<std::endl;
-	// 	std::cout<<"long "<<sizeof(long)<<std::endl;
-	// 	std::cout<<"long double "<<sizeof(long double)<<std::endl;
 	std::cout << std::setprecision(15);
 	InitTimers();
 	if (!DEBUG)
 	{
-		// const int num_features = 5;
-		// const long num_points = 1 << 22; // nadal jest problem z dużymi liczbami
-		// const int num_cluster = 5;
-
-		// const int num_epoches = 5;
 		//________________________________THRUST________________________________
 		std::cout << "----------------THURST----------------" << std::endl;
 		timer_thurst_version->Start();
@@ -144,6 +126,7 @@ int main(int argc, char **argv)
 		std::cout << "GPU implementation:     " << timer_gpu_version->total_time << "ms" << std::endl;
 		std::cout << "compute_centroids:      " << timer_compute_centroids->total_time << "ms" << std::endl;
 		std::cout << "find_closest_centroids: " << timer_find_closest_centroids->total_time << "ms" << std::endl;
+
 		// save generated points
 		// DataPoints *point = GeneratePoints(num_features, num_points);
 		// SaveCsv(point, "Input.csv");
@@ -156,10 +139,7 @@ int main(int argc, char **argv)
 				for (int i = 17; i < 22; i++)
 				{
 					constants::num_points = 1 << i;
-					// int num_cluster = 6;
 
-					// const int num_epoches = 5;
-					// std::cout << "features: " << num_features << ", clusters: " << num_cluster <<", num_points: i<<" << i<< std::endl;
 					const double exact_error = RunKMeansClustering(KMeansOneIterationCpu, "CPU", constants::num_features, constants::num_points, constants::num_cluster, constants::num_epoches);
 					const double gpu_error = RunKMeansClustering(KMeansOneIterationGpu, "GPU", constants::num_features, constants::num_points, constants::num_cluster, constants::num_epoches);
 					if (std::abs(exact_error - gpu_error) > 10e-7)
