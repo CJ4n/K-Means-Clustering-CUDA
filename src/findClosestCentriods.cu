@@ -1,33 +1,53 @@
-
 #include "findClosestCentriods.h"
 
-__global__ void FindClosestCentroids(DataPoints *points, DataPoints *centroids)
+#define INDEX_CLUSTER(f, c, num_clusters) (f * num_clusters) + c
+#define INDEX_POINT(f, tid, num_clusters, num_features) num_features *num_clusters + tid *num_features + f
+// __global__ void FindClosestCentroids(DataPoints *points, const DataPoints *centroids)
+__global__ void FindClosestCentroids(MyDataType **features, int *centroids_ids, MyDataType **centeriods_features, const int num_points, const int num_features, const int num_clusters)
 {
-	// int tid = threadIdx.x;
-	int gid = blockIdx.x * blockDim.x + threadIdx.x;
-	float min_dist = __FLT_MAX__;
-	if (gid >= points->num_data_points)
+	//  centroids				| data points
+	// (f1{c1,c2,c3}f2{c1,c2,c3}|f1{c1,c2,c3}f2{c1,c2,c3},...,f1{c1,c2,c3}f2{c1,c2,c3})
+	extern __shared__ MyDataType shm[];
+	const int tid = threadIdx.x;
+	const int gid = blockIdx.x * blockDim.x + threadIdx.x;
+	
+	if (gid >= num_points)
 	{
 		return;
 	}
-	
-	for (int c = 0; c < centroids->num_data_points; ++c)
+
+	if (tid < num_clusters * num_features)
 	{
-		if (points->num_data_points < gid)
+		int x = tid / num_clusters;
+		int y = tid % num_clusters;
+		shm[INDEX_CLUSTER(x, y, num_clusters)] = centeriods_features[x][y];
+	}
+
+	for (int f = 0; f < num_features; ++f)
+	{
+		shm[INDEX_POINT(f, tid, num_clusters, num_features)] = features[f][gid];
+	}
+	MyDataType min_dist = __FLT_MAX__;
+
+	// centroids_ids[gid] = 0;
+
+	__syncthreads();
+	int cur_centroids = -1;
+
+	for (int c = 0; c < num_clusters; ++c)
+	{
+		MyDataType dist = 0;
+		for (int f = 0; f < num_features; ++f)
 		{
-			return;
-		}
-		float dist = 0;
-		for (int feature = 0; feature < centroids->num_features; ++feature)
-		{
-			float tmp = points->features_array[feature][gid] - centroids->features_array[feature][c];
+			MyDataType tmp = shm[INDEX_POINT(f, tid, num_clusters, num_features)] - shm[INDEX_CLUSTER(f, c, num_clusters)];
 			dist += tmp * tmp;
 		}
 
 		if (dist < min_dist)
 		{
 			min_dist = dist;
-			points->cluster_id_of_point[gid] = c;
+			cur_centroids = c;
 		}
 	}
+	centroids_ids[gid] = cur_centroids;
 }

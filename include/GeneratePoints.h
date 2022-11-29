@@ -1,3 +1,3 @@
 #include "dataPoints.h"
 
-DataPoints* GeneratePoints(int num_features,int num_points);
+DataPoints* GeneratePoints(const int num_features,const int num_points);

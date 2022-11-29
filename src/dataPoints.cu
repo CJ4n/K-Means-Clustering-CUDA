@@ -1,5 +1,3 @@
-#pragma once
-
 #include <cuda.h>
 #include <fstream>	// for file-reading
 #include <iostream> // for file-reading
@@ -8,7 +6,7 @@
 #include <dataPoints.h>
 #include "cudaCheckError.h"
 
-DataPoints *AllocateDataPoints(int num_features, long num_data_points, bool malloc_managed)
+DataPoints *AllocateDataPoints(const int num_features,const long num_data_points,const bool malloc_managed)
 {
 
 	DataPoints *point;
@@ -46,7 +44,7 @@ void DeallocateDataPoints(DataPoints *data_points)
 	cudaFree(data_points);
 }
 
-float Distance(DataPoints *p1, DataPoints *p2, int point_id, int cluster_id)
+float Distance(const DataPoints *p1,const DataPoints *p2,const int point_id,const int cluster_id)
 {
 	float error = 0;
 	for (int feature = 0; feature < p2->num_features; ++feature)
@@ -56,7 +54,7 @@ float Distance(DataPoints *p1, DataPoints *p2, int point_id, int cluster_id)
 	return error;
 }
 
-float MeanSquareError(DataPoints *point, DataPoints *centroid)
+float MeanSquareError(const DataPoints *point,const DataPoints *centroid)
 {
 	float error = 0;
 	for (int i = 0; i < point->num_data_points; ++i)
@@ -103,7 +101,7 @@ DataPoints *ReadCsv()
 	return point;
 }
 
-void SaveCsv(DataPoints *point, std::string file_name)
+void SaveCsv(const DataPoints *point,const std::string file_name)
 {
 	std::ofstream myfile;
 	std::remove(file_name.c_str());
