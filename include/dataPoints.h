@@ -19,6 +19,7 @@ struct Point
 };
 
 typedef double MyDataType;
+typedef long CountType;
 struct DataPoints
 {
 	MyDataType **features_array;
