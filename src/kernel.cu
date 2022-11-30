@@ -21,7 +21,7 @@ DataPoints *GetCentroids(DataPoints *point, int num_clusters)
 
 	for (int i = 0; i < num_clusters; ++i)
 	{
-		int n = rand() % point->num_data_points;
+		// int n = rand() % point->num_data_points;
 		for (int feature = 0; feature < point->num_features; ++feature)
 		{
 			centroids->features_array[feature][i] = point->features_array[feature][i];

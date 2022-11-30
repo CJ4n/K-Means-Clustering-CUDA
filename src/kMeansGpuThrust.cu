@@ -20,7 +20,11 @@ void KMeansOneIterationGpuThurst(DataPoints *points, DataPoints *centroids)
 	int num_blocks = (int)std::max(std::ceil(((double)N / (double)num_threads)), 1.0);
 	// get nearest clusters
 	const size_t shm_find_closest = sizeof(MyDataType) * num_clusters*num_features;
-	FindClosestCentroids<<<num_blocks, num_threads,shm_find_closest>>>(points->features_array,points->cluster_id_of_point, centroids->features_array,num_points,num_features,num_clusters);
+
+
+	// FindClosestCentroids<<<num_blocks, num_threads,shm_find_closest>>>(points->features_array,points->cluster_id_of_point, centroids->features_array,num_points,num_features,num_clusters);
+
+	
 	// get nearest clusters
 	cudaCheckError();
 	cudaDeviceSynchronize();

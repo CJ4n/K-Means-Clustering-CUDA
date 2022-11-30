@@ -7,7 +7,7 @@ __global__ void FindClosestCentroids(MyDataType **features, int *centroids_ids, 
 {
 	//  centroids				| data points
 	// (f1{c1,c2,c3}f2{c1,c2,c3}|f1{c1,c2,c3}f2{c1,c2,c3},...,f1{c1,c2,c3}f2{c1,c2,c3})
-	extern __shared__ MyDataType shm[];
+	extern __shared__ MyDataType shm2[];
 	const int tid = threadIdx.x;
 	const int gid = blockIdx.x * blockDim.x + threadIdx.x;
 	
@@ -20,14 +20,14 @@ __global__ void FindClosestCentroids(MyDataType **features, int *centroids_ids, 
 	{
 		int x = tid / num_clusters;
 		int y = tid % num_clusters;
-		shm[INDEX_CLUSTER(x, y, num_clusters)] = centeriods_features[x][y];
+		shm2[INDEX_CLUSTER(x, y, num_clusters)] = centeriods_features[x][y];
 	}
 
 	for (int f = 0; f < num_features; ++f)
 	{
-		shm[INDEX_POINT(f, tid, num_clusters, num_features)] = features[f][gid];
+		shm2[INDEX_POINT(f, tid, num_clusters, num_features)] = features[f][gid];
 	}
-	MyDataType min_dist = __FLT_MAX__;
+	MyDataType min_dist = __DBL_MAX__;
 
 	// centroids_ids[gid] = 0;
 
@@ -39,7 +39,7 @@ __global__ void FindClosestCentroids(MyDataType **features, int *centroids_ids, 
 		MyDataType dist = 0;
 		for (int f = 0; f < num_features; ++f)
 		{
-			MyDataType tmp = shm[INDEX_POINT(f, tid, num_clusters, num_features)] - shm[INDEX_CLUSTER(f, c, num_clusters)];
+			MyDataType tmp = shm2[INDEX_POINT(f, tid, num_clusters, num_features)] - shm2[INDEX_CLUSTER(f, c, num_clusters)];
 			dist += tmp * tmp;
 		}
 
@@ -49,5 +49,6 @@ __global__ void FindClosestCentroids(MyDataType **features, int *centroids_ids, 
 			cur_centroids = c;
 		}
 	}
+	
 	centroids_ids[gid] = cur_centroids;
 }

@@ -19,18 +19,18 @@ struct Point
 };
 
 typedef double MyDataType;
-typedef long CountType;
+typedef int CountType;
 struct DataPoints
 {
-	MyDataType **features_array;
 	int *cluster_id_of_point;
 	int num_data_points;
 	int num_features;
+	MyDataType **features_array;
 };
 
-DataPoints *AllocateDataPoints(const int num_features, const long num_data_points, const bool malloc_managed = true);
+DataPoints *AllocateDataPoints(const int num_features, const int num_data_points, const bool malloc_managed = true);
 void DeallocateDataPoints(DataPoints *data_points);
-float Distance(const DataPoints *p1, const DataPoints *p2, const int point_id, const int cluster_id);
-float MeanSquareError(const DataPoints *point, const DataPoints *centroid);
+MyDataType Distance(const DataPoints *p1, const DataPoints *p2, const int point_id, const int cluster_id);
+MyDataType MeanSquareError(const DataPoints *point, const DataPoints *centroid);
 DataPoints *ReadCsv();
 void SaveCsv(const DataPoints *point, const std::string file_name);

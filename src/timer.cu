@@ -31,7 +31,6 @@ float GpuTimer::Elapsed()
       float elapsed;
       cudaEventSynchronize(stop);
       cudaEventElapsedTime(&elapsed, start, stop);
-
       total_time += elapsed;
       return elapsed;
 }
@@ -42,4 +41,3 @@ GpuTimer *timer_memory_allocation_gpu;
 GpuTimer *timer_gpu_version;
 GpuTimer *timer_thurst_version;
 GpuTimer *timer_cpu_version;
-

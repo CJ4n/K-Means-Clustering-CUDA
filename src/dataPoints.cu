@@ -6,7 +6,7 @@
 #include <dataPoints.h>
 #include "cudaCheckError.h"
 
-DataPoints *AllocateDataPoints(const int num_features,const long num_data_points,const bool malloc_managed)
+DataPoints *AllocateDataPoints(const int num_features,const int num_data_points,const bool malloc_managed)
 {
 
 	DataPoints *point;
@@ -44,9 +44,9 @@ void DeallocateDataPoints(DataPoints *data_points)
 	cudaFree(data_points);
 }
 
-float Distance(const DataPoints *p1,const DataPoints *p2,const int point_id,const int cluster_id)
+MyDataType Distance(const DataPoints *p1,const DataPoints *p2,const int point_id,const int cluster_id)
 {
-	float error = 0;
+	MyDataType error = 0;
 	for (int feature = 0; feature < p2->num_features; ++feature)
 	{
 		error += (p1->features_array[feature][cluster_id] - p2->features_array[feature][point_id]) * (p1->features_array[feature][cluster_id] - p2->features_array[feature][point_id]);
@@ -54,9 +54,9 @@ float Distance(const DataPoints *p1,const DataPoints *p2,const int point_id,cons
 	return error;
 }
 
-float MeanSquareError(const DataPoints *point,const DataPoints *centroid)
+MyDataType MeanSquareError(const DataPoints *point,const DataPoints *centroid)
 {
-	float error = 0;
+	MyDataType error = 0;
 	for (int i = 0; i < point->num_data_points; ++i)
 	{
 		error += Distance(centroid, point, i, point->cluster_id_of_point[i]);
