@@ -326,135 +326,134 @@ int RoundToPowerOf2(int n)
 	return 1 << count;
 }
 
-#define DEBUG 0
+#define DEBUG 1
 #define MAX_SHM_SIZE 48 * 1024
 #define DEFAULT_NUM_THREADS 1024l
 #define CALCULATE_SHM_SIZE(num_features, num_clusters, num_threads) num_threads *(num_features + 1) * num_clusters * sizeof(MyDataType)
 
 DataPoints *reduced_points;
 int cur_epoch = 0;
-
-// #define NUM_STREAMS
+#include <unistd.h>
 
 void debugFunction(DataPoints *points, CountType *ids_count, int num_features, int num_clusters, int num_blocks, int num_threads, int N, std::string label)
 {
+// sleep(4);
+	// std::cout << "\n---------" << label << "---------" << std::endl;
+	// DataPoints *debug = AllocateDataPoints(num_features, num_clusters);
 
-	std::cout << "\n---------" << label << "---------" << std::endl;
-	DataPoints *debug = AllocateDataPoints(num_features, num_clusters);
+	// long sum_tot = 0;
+	// // Gets exact sum by feature and clusters
+	// for (int f = 0; f < num_features; f++)
+	// 	for (int c = 0; c < num_clusters; c++)
+	// 	{
+	// 		debug->features_array[f][c] = 0;
+	// 	}
 
-	long sum_tot = 0;
-	// Gets exact sum by feature and clusters
-	for (int f = 0; f < num_features; f++)
-		for (int c = 0; c < num_clusters; c++)
-		{
-			debug->features_array[f][c] = 0;
-		}
+	// for (int i = 0; i < points->num_data_points; i++)
+	// {
+	// 	for (int f = 0; f < num_features; f++)
+	// 	{
+	// 		debug->features_array[f][points->cluster_id_of_point[i]] += points->features_array[f][i];
+	// 		sum_tot += points->features_array[f][i];
+	// 	}
+	// }
 
-	for (int i = 0; i < points->num_data_points; i++)
-	{
-		for (int f = 0; f < num_features; f++)
-		{
-			debug->features_array[f][points->cluster_id_of_point[i]] += points->features_array[f][i];
-			sum_tot += points->features_array[f][i];
-		}
-	}
+	// std::cout << " correct (points)\n{\n	";
+	// double sum_tot_v2 = 0;
+	// for (int c = 0; c < num_clusters; c++)
+	// {
+	// 	for (int f = 0; f < num_features; f++)
+	// 	{
+	// 		std::cout << debug->features_array[f][c] << ", ";
+	// 		sum_tot_v2 += debug->features_array[f][c];
+	// 		debug->features_array[f][c] = 0;
+	// 	}
+	// }
+	// std::cout << "\n}\n";
+	// // Gets exact sum by feature and clusters
 
-	std::cout << " correct (points)\n{\n	";
-	double sum_tot_v2 = 0;
-	for (int c = 0; c < num_clusters; c++)
-	{
-		for (int f = 0; f < num_features; f++)
-		{
-			std::cout << debug->features_array[f][c] << ", ";
-			sum_tot_v2 += debug->features_array[f][c];
-			debug->features_array[f][c] = 0;
-		}
-	}
-	std::cout << "\n}\n";
-	// Gets exact sum by feature and clusters
+	// // Gets redcued sum by feature and cluster
+	// long sum_tot_reduced = 0;
 
-	// Gets redcued sum by feature and cluster
-	long sum_tot_reduced = 0;
+	// for (int i = 0; i < num_blocks * num_clusters; i++)
+	// {
+	// 	for (int f = 0; f < num_features; f++)
+	// 	{
+	// 		debug->features_array[f][reduced_points->cluster_id_of_point[i]] += reduced_points->features_array[f][i];
+	// 		sum_tot_reduced += reduced_points->features_array[f][i];
+	// 	}
+	// }
+	// std::cout << "Calculated points (reduced_points)\n{\n	";
 
-	for (int i = 0; i < num_blocks * num_clusters; i++)
-	{
-		for (int f = 0; f < num_features; f++)
-		{
-			debug->features_array[f][reduced_points->cluster_id_of_point[i]] += reduced_points->features_array[f][i];
-			sum_tot_reduced += reduced_points->features_array[f][i];
-		}
-	}
-	std::cout << "Calculated points (reduced_points)\n{\n	";
+	// double sum_tot_reduced_v2 = 0;
+	// for (int c = 0; c < num_clusters; c++)
+	// {
+	// 	for (int f = 0; f < num_features; f++)
+	// 	{
+	// 		std::cout << debug->features_array[f][c] << ", ";
+	// 		sum_tot_reduced_v2 += debug->features_array[f][c];
+	// 		debug->features_array[f][c] = 0;
+	// 	}
+	// }
+	// std::cout << "\n}\n";
 
-	double sum_tot_reduced_v2 = 0;
-	for (int c = 0; c < num_clusters; c++)
-	{
-		for (int f = 0; f < num_features; f++)
-		{
-			std::cout << debug->features_array[f][c] << ", ";
-			sum_tot_reduced_v2 += debug->features_array[f][c];
-			debug->features_array[f][c] = 0;
-		}
-	}
-	std::cout << "\n}\n";
+	// // Gets redcued sum by feature and cluster
 
-	// Gets redcued sum by feature and cluster
+	// std::cout << "sumed all points(sum_tot):           " << sum_tot << std::endl;
+	// std::cout << "sumed all points(sum_tot_v2)         " << sum_tot_v2 << std::endl;
+	// std::cout << "sumed all points(sum_tot_reduced)    " << sum_tot_reduced << std::endl;
+	// std::cout << "sumed all points(sum_tot_reduced_v2) " << sum_tot_reduced_v2 << std::endl;
 
-	std::cout << "sumed all points(sum_tot):           " << sum_tot << std::endl;
-	std::cout << "sumed all points(sum_tot_v2)         " << sum_tot_v2 << std::endl;
-	std::cout << "sumed all points(sum_tot_reduced)    " << sum_tot_reduced << std::endl;
-	std::cout << "sumed all points(sum_tot_reduced_v2) " << sum_tot_reduced_v2 << std::endl;
+	// CountType *count_check = (CountType *)malloc(sizeof(CountType) * num_clusters);
+	// memset(count_check, 0, sizeof(CountType) * num_clusters);
 
-	CountType *count_check = (CountType *)malloc(sizeof(CountType) * num_clusters);
-	memset(count_check, 0, sizeof(CountType) * num_clusters);
+	// // Gets exact count of ids
+	// CountType exact_points_count = 0;
+	// for (int i = 0; i < points->num_data_points; ++i)
+	// {
+	// 	count_check[points->cluster_id_of_point[i]]++;
+	// 	// std::cout<<points->cluster_id_of_point[i]<<", ";
+	// }
+	// std::cout << "Exact ids count\n{\n	";
+	// for (int c = 0; c < num_clusters; ++c)
+	// {
+	// 	std::cout << count_check[c] << ", ";
+	// 	exact_points_count += count_check[c];
+	// }
+	// std::cout << "\n}\n";
+	// // Gets exact count of ids
 
-	// Gets exact count of ids
-	CountType exact_points_count = 0;
-	for (int i = 0; i < points->num_data_points; ++i)
-	{
-		count_check[points->cluster_id_of_point[i]]++;
-		// std::cout<<points->cluster_id_of_point[i]<<", ";
-	}
-	std::cout << "Exact ids count\n{\n	";
-	for (int c = 0; c < num_clusters; ++c)
-	{
-		std::cout << count_check[c] << ", ";
-		exact_points_count += count_check[c];
-	}
-	std::cout << "\n}\n";
-	// Gets exact count of ids
+	// memset(count_check, 0, sizeof(CountType) * num_clusters);
 
-	memset(count_check, 0, sizeof(CountType) * num_clusters);
+	// // Gets reduced count of ids
+	// CountType reduced_points_count = 0;
+	// for (int i = 0; i < num_blocks; ++i)
+	// {
+	// 	for (int c = 0; c < num_clusters; ++c)
+	// 	{
+	// 		count_check[c] += ids_count[i * num_clusters + c];
+	// 		reduced_points_count += ids_count[i * num_clusters + c];
+	// 	}
+	// }
+	// std::cout << "Reduced ids count\n{\n	";
+	// for (int c = 0; c < num_clusters; ++c)
+	// {
+	// 	std::cout << count_check[c] << ", ";
+	// }
+	// std::cout << "\n}\n";
+	// // Gets reduced count of ids
 
-	// Gets reduced count of ids
-	CountType reduced_points_count = 0;
-	for (int i = 0; i < num_blocks; ++i)
-	{
-		for (int c = 0; c < num_clusters; ++c)
-		{
-			count_check[c] += ids_count[i * num_clusters + c];
-			reduced_points_count += ids_count[i * num_clusters + c];
-		}
-	}
-	std::cout << "Reduced ids count\n{\n	";
-	for (int c = 0; c < num_clusters; ++c)
-	{
-		std::cout << count_check[c] << ", ";
-	}
-	std::cout << "\n}\n";
-	// Gets reduced count of ids
+	// std::cout << "number of points (exact_points_count):   " << exact_points_count << std::endl;
+	// std::cout << "number of points (reduced_points_count): " << reduced_points_count << std::endl;
 
-	std::cout << "number of points (exact_points_count):   " << exact_points_count << std::endl;
-	std::cout << "number of points (reduced_points_count): " << reduced_points_count << std::endl;
-
-	free(count_check);
-	if (num_blocks != -1)
-		if (num_blocks * num_threads * 2 < N || N != num_clusters * num_blocks)
-		{
-			std::cout << "aaaaaaaaaaaaaaaaaaaaaa\n";
-		}
-	DeallocateDataPoints(debug);
-	cudaCheckError();
+	// free(count_check);
+	// if (num_blocks != -1)
+	// 	if (num_blocks * num_threads * 2 < N || N != num_clusters * num_blocks)
+	// 	{
+	// 		std::cout << "aaaaaaaaaaaaaaaaaaaaaa\n";
+	// 	}
+	// DeallocateDataPoints(debug);
+	// cudaCheckError();
 }
 
 int GetNumBlocks(int num_threads, int cur_num_blocks, int num_clusters)
@@ -463,8 +462,8 @@ int GetNumBlocks(int num_threads, int cur_num_blocks, int num_clusters)
 	int num_blocks = std::ceil((float)N / (float)num_threads / 2.0);
 	return num_blocks;
 }
-#define cudaDeviceScheduleBlockingSync 0x04
-#include <unistd.h>
+// #define cudaDeviceScheduleBlockingSync 0x04
+// #define cudaDeviceScheduleBlockingSync 0x04
 
 #define NUM_STREAMS 1 + 1
 cudaStream_t stream[NUM_STREAMS];
@@ -481,22 +480,21 @@ void ReduceFeature(DataPoints *points, CountType *ids_count, int num_features, i
 	size_t shm_size = sizeof(MyDataType) * num_threads * num_clusters;
 	for (int f = 0; f < num_features; ++f)
 	{
-		ReduceDataPointsByFeatures<<<num_blocks, num_threads, shm_size,stream[0]>>>(points->features_array[f],
+		ReduceDataPointsByFeatures<<<num_blocks, num_threads, shm_size,stream[f]>>>(points->features_array[f],
 																		  points->cluster_id_of_point, reduced_points->features_array[f],
 																		  N, num_clusters);
-		// cudaDeviceSynchronize();
+		cudaDeviceSynchronize();
 	//  cudaDeviceSynchronize();
 		// cudaCheckError();
 		// z jakiegos dziwneog powodu brak synchronizacji sprawia że zaczela działać, a z synchronizacja nie działą xD
 	}
-	cudaStreamSynchronize(stream[0]);
 	//  cudaDeviceSynchronize();
 	// sleep(3);
 	shm_size = sizeof(CountType) * num_threads * num_clusters;
-	ReduceDataPointsCountPoints<<<num_blocks, num_threads, shm_size,stream[0]>>>(points->cluster_id_of_point,
+	ReduceDataPointsCountPoints<<<num_blocks, num_threads, shm_size,stream[NUM_STREAMS-1]>>>(points->cluster_id_of_point,
 																	   count_in, ids_count, N, num_clusters);
 	// for (int f = 0; f < num_features; ++f)
-	// 	cudaDeviceSynchronize();
+	cudaDeviceSynchronize();
 	// cudaDeviceSynchronize();
 	// cudaCheckError();
 	// if (DEBUG)
