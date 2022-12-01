@@ -1,6 +1,6 @@
-#include <ctime> 
+#include <ctime>
 #include <cuda.h>
-#include <iostream> 
+#include <iostream>
 #include <math.h>
 #include <vector>
 
@@ -86,10 +86,10 @@ void DeleteTimers()
 }
 #include <iomanip>
 
-
 // TODO: zmusic do dzialanie reduce by feature
 int main(int argc, char **argv)
 {
+
 	std::cout << std::setprecision(15);
 	InitTimers();
 	if (!DEBUG)
@@ -118,10 +118,9 @@ int main(int argc, char **argv)
 		timer_gpu_version->Elapsed();
 		//__________________________________GPU_________________________________
 
+		std::cout << "THURST implementation:  " << timer_thurst_version->total_time << "ms" << std::endl;
 
-		std::cout << "THURST implementation:  " << timer_thurst_version->total_time<< "ms" << std::endl;
-
-		std::cout << "CPU implementation:     " << timer_cpu_version->total_time << "ms"<< std::endl;
+		std::cout << "CPU implementation:     " << timer_cpu_version->total_time << "ms" << std::endl;
 
 		std::cout << "GPU implementation:     " << timer_gpu_version->total_time << "ms" << std::endl;
 		std::cout << "compute_centroids:      " << timer_compute_centroids->total_time << "ms" << std::endl;
