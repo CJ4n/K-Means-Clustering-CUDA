@@ -32,6 +32,7 @@ DataPoints *GetCentroids(DataPoints *point, int num_clusters)
 	return centroids;
 }
 #define DEBUG 0
+#include <unistd.h>
 
 double kMeansClustering(DataPoints *point, int epochs, int num_clusters, void (*k_means_one_iteration_algorithm)(DataPoints *, DataPoints *))
 {
@@ -44,15 +45,20 @@ double kMeansClustering(DataPoints *point, int epochs, int num_clusters, void (*
 	}
 	for (int epoch = 0; epoch < epochs; ++epoch)
 	{
+		
 
+		// sleep(1);
 		k_means_one_iteration_algorithm(point, centroids);
-		cudaDeviceSynchronize();
+// cudaDeviceSynchronize();
+		cudaCheckError();
+		// sleep(1);
 		final_error = MeanSquareError(point, centroids);
 		if (!DEBUG)
 		{
 			std::cout << "EPOCH: " << epoch << " ERROR: " << final_error << std::endl;
 		}
 	}
+
 	DeallocateDataPoints(centroids);
 	return final_error;
 }

@@ -30,6 +30,7 @@ DataPoints *AllocateDataPoints(const int num_features,const int num_data_points,
 		cudaMemset(point->features_array[feature], 0, sizeof(MyDataType) * point->num_data_points);
 		cudaCheckError();
 	}
+
 	return point;
 }
 
@@ -53,7 +54,7 @@ MyDataType Distance(const DataPoints *p1,const DataPoints *p2,const int point_id
 	}
 	return error;
 }
-
+#include <unistd.h>
 MyDataType MeanSquareError(const DataPoints *point,const DataPoints *centroid)
 {
 	MyDataType error = 0;
