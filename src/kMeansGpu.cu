@@ -172,7 +172,7 @@ __global__ void ReduceDataPointsCountPoints(const int *cluster_ids,
 #define INDEX_F(c, tid, num_clusters) c + (tid * num_clusters)
 
 __global__ void ReduceDataPointsByFeatures(MyDataType **features, const int *cluster_ids, MyDataType **out,
-										   const int num_data_points, const int num_clusters, int active_threads_count, int feature)
+										   const int num_data_points, const int num_clusters, int active_threads_count,int feature)
 {
 	extern __shared__ MyDataType shm_f[];
 	const int tid = threadIdx.x;
@@ -275,7 +275,7 @@ DataPoints *reduced_points;
 int cur_epoch = 0;
 #include <unistd.h>
 
-void debugFunction(DataPoints *points, DataPoints *out, CountType *ids_count, int num_features, int num_clusters, int num_blocks, int num_threads, int N, std::string label)
+void debugFunction(DataPoints *points, CountType *ids_count, int num_features, int num_clusters, int num_blocks, int num_threads, int N, std::string label)
 {
 	std::cout << "\n---------" << label << "---------" << std::endl;
 	DataPoints *debug = AllocateDataPoints(num_features, num_clusters);
@@ -318,8 +318,8 @@ void debugFunction(DataPoints *points, DataPoints *out, CountType *ids_count, in
 	{
 		for (int f = 0; f < num_features; f++)
 		{
-			debug->features_array[f][out->cluster_id_of_point[i]] += out->features_array[f][i];
-			sum_tot_reduced += out->features_array[f][i];
+			debug->features_array[f][reduced_points->cluster_id_of_point[i]] += reduced_points->features_array[f][i];
+			sum_tot_reduced += reduced_points->features_array[f][i];
 		}
 	}
 	std::cout << "Calculated points (reduced_points)\n{\n	";
@@ -418,11 +418,11 @@ void ReduceFeature(DataPoints *points, DataPoints *out, CountType *ids_count, in
 	{
 		ReduceDataPointsByFeatures<<<num_blocks, num_threads, shm_size>>>(points->features_array,
 																		  points->cluster_id_of_point, out->features_array,
-																		  N, num_clusters, atc, f);
+																		  N, num_clusters, atc,f);
 		// cudaCheckError();
 		// z jakiegos dziwneog powodu brak synchronizacji sprawia że zaczela działać, a z synchronizacja nie działą xD
 	}
-	// sleep(1);
+	// sleep(3);
 	shm_size = sizeof(CountType) * num_threads * num_clusters;
 	ReduceDataPointsCountPoints<<<num_blocks, num_threads, shm_size>>>(points->cluster_id_of_point,
 																	   count_in, ids_count, N, num_clusters, atc);
@@ -500,7 +500,7 @@ void KMeansOneIterationGpu(DataPoints *points, DataPoints *centroids)
 	// ReduceDataPoints<<<num_blocks, num_threads, shmem_size>>>(points->features_array,
 	// 														  points->cluster_id_of_point, reduced_points->features_array,
 	// 														  1, ids_count, N, num_features, num_clusters);
-	ReduceFeature(points, reduced_points, ids_count, N_FEATURES, num_clusters, N, 1, &num_threads, &num_blocks, num_threads);
+	ReduceFeature(points,reduced_points, ids_count, N_FEATURES, num_clusters, N, 1, &num_threads, &num_blocks, num_threads);
 
 	// timer_compute_centroids->Stop();
 	// timer_compute_centroids->Elapsed();
@@ -510,29 +510,21 @@ void KMeansOneIterationGpu(DataPoints *points, DataPoints *centroids)
 
 	if (DEBUG)
 	{
-		debugFunction(points, reduced_points, ids_count, N_FEATURES, num_clusters, num_blocks, num_threads, num_clusters * num_blocks, "BEFORE WHILE REDUCE");
+		debugFunction(points, ids_count, N_FEATURES, num_clusters, num_blocks, num_threads, num_clusters * num_blocks, "BEFORE WHILE REDUCE");
 	}
-	DataPoints *new_out;
 	// further reduce points in `reduced_points`, until there will be no more then  `num_threads * 2` poitns left to reduce
 	while (num_blocks * num_clusters > num_threads * 2)
 	{
-
 		N = num_blocks * num_clusters;
 		// N=lambda(N);
 		num_blocks = GetNumBlocks(num_threads, num_blocks, num_clusters); // std::ceil(N / num_threads / 2.0);
-
-		int num_threads_inti_id = (int)std::min(DEFAULT_NUM_THREADS, (long)N);
-		int num_block_init_id = (int)std::max(std::ceil((N / (double)num_threads_inti_id)), 1.0);
-		new_out = AllocateDataPoints(N_FEATURES, num_blocks * num_clusters);
-		InitPointsWithCentroidsIds<<<num_block_init_id, num_threads_inti_id>>>(new_out, num_clusters, num_blocks * num_clusters);
 		// shmem_size =  sizeof(MyDataType) * num_threads * num_clusters;;//CALCULATE_SHM_SIZE(num_features, num_clusters, num_threads);
 
 		// timer_compute_centroids->Start();
 		// ReduceDataPoints<<<num_blocks, num_threads, shmem_size>>>(reduced_points->features_array,
 		//  														  reduced_points->cluster_id_of_point, reduced_points->features_array,
 		//  														  0, ids_count, N, num_features, num_clusters);
-
-		ReduceFeature(reduced_points, new_out, ids_count, N_FEATURES, num_clusters, N, 0, &num_threads, &num_blocks, num_threads);
+		ReduceFeature(reduced_points, reduced_points,ids_count, N_FEATURES, num_clusters, N, 0, &num_threads, &num_blocks, num_threads);
 		// timer_compute_centroids->Stop();
 		// timer_compute_centroids->Elapsed();
 
@@ -541,33 +533,22 @@ void KMeansOneIterationGpu(DataPoints *points, DataPoints *centroids)
 
 	if (DEBUG)
 	{
-		debugFunction(points, new_out, ids_count, N_FEATURES, num_clusters, num_blocks, num_threads, num_blocks * num_clusters, "AFTER WHILE REDUCE");
+		debugFunction(points, ids_count, N_FEATURES, num_clusters, num_blocks, num_threads, num_blocks * num_clusters, "AFTER WHILE REDUCE");
 	}
-	int save = num_blocks;
-
-	N = num_clusters * num_blocks;
-	num_threads = std::ceil(N / 2.0);
-	num_threads = RoundToPowerOf2(num_threads);
-	num_blocks = GetNumBlocks(num_threads, num_blocks, num_clusters);
-
-	DataPoints *new_new_out; //= AllocateDataPoints(N_FEATURES, num_blocks * num_clusters);
-
-	num_threads_inti_id = (int)std::min(DEFAULT_NUM_THREADS, (long)N);
-	num_block_init_id = (int)std::max(std::ceil((N / (double)num_threads_inti_id)), 1.0);
-	new_new_out = AllocateDataPoints(N_FEATURES, num_blocks * num_clusters);
-	InitPointsWithCentroidsIds<<<num_block_init_id, num_threads_inti_id>>>(new_new_out, num_clusters, num_blocks * num_clusters);
-
 	// further reduce points in `reduced_points`, until there will be no more then  `num_threads * 2` poitns left to reduce
 	// last reduce, reduce all remaining points to a 'single datapoint', that is: points belonging to the same cluster will be reduced to single point
-	if (save > 1) // if may happen, that last reduced reduced all the point, happen when num_blocks==1
+	if (num_blocks > 1) // if may happen, that last reduced reduced all the point, happen when num_blocks==1
 	{
-
+		N = num_clusters * num_blocks;
+		num_threads = std::ceil(N / 2.0);
+		num_threads = RoundToPowerOf2(num_threads);
+		num_blocks = GetNumBlocks(num_threads, num_blocks, num_clusters);
 		// shmem_size = CALCULATE_SHM_SIZE(num_features, num_clusters, num_threads_last_sumup);
 		// timer_compute_centroids->Start();
 		// ReduceDataPoints<<<1, num_threads_last_sumup, shmem_size>>>(reduced_points->features_array,
 		// 															reduced_points->cluster_id_of_point, reduced_points->features_array,
 		// 															0, ids_count, N, num_features, num_clusters);
-		ReduceFeature(new_out, new_new_out, ids_count, N_FEATURES, num_clusters, N, 0, &num_threads, &num_blocks, std::ceil(N / 2.0));
+		ReduceFeature(reduced_points, reduced_points,ids_count, N_FEATURES, num_clusters, N, 0, &num_threads, &num_blocks, std::ceil(N / 2.0));
 		// timer_compute_centroids->Stop();
 
 		// timer_compute_centroids->Elapsed();
@@ -575,16 +556,14 @@ void KMeansOneIterationGpu(DataPoints *points, DataPoints *centroids)
 		cudaCheckError();
 		if (DEBUG)
 		{
-			debugFunction(points, new_new_out, ids_count, N_FEATURES, num_clusters, 1, num_threads, 1 * num_clusters, "AFTER LAST REDUCE");
+			debugFunction(points, ids_count, N_FEATURES, num_clusters, 1, num_threads, 1 * num_clusters, "AFTER LAST REDUCE");
 		}
 	}
-
 	// last reduce, reduce all remaining points
 
 	// find new centroids
-	FindNewCentroids<<<1, N_FEATURES * num_clusters>>>(centroids, ids_count, new_new_out);
+	FindNewCentroids<<<1, N_FEATURES * num_clusters>>>(centroids, ids_count, reduced_points);
 	cudaCheckError();
-
 	// cudaDeviceSynchronize();
 	// for (int f = 0; f < num_features; ++f)
 	// {
@@ -599,10 +578,6 @@ void KMeansOneIterationGpu(DataPoints *points, DataPoints *centroids)
 	// if (cur_epoch++ == constants::num_epoches - 1)
 	// cudaDeviceSynchronize();
 	DeallocateDataPoints(reduced_points);
-	cudaCheckError();
-	DeallocateDataPoints(new_out);
-	cudaCheckError();
-	DeallocateDataPoints(new_new_out);
 	cudaCheckError();
 
 	cudaFree(ids_count);
