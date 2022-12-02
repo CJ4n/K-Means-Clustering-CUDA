@@ -11,7 +11,7 @@
 // template <int NUM_FEATURES=2,int NUM_DATA_POINTS=200>
 // __global__ void ReduceDataPoints(const DataPoints *points, const int k /*number of centroids*/, DataPoints *out, const int count_in, long *count_out, const int num_data_points)
 __global__ void ReduceDataPoints(MyDataType **features, int *cluster_ids, MyDataType **centroids_features,
-								 const int count_in, CountType *count_out, const int num_data_points, const int num_features, const int num_clusters)
+								 const int count_in, CountType *count_out, const int num_data_points, const int num_features, const int num_clusters,int act)
 {
 	extern __shared__ MyDataType shm[];
 	const int tid = threadIdx.x;
@@ -105,73 +105,6 @@ __global__ void ReduceDataPoints(MyDataType **features, int *cluster_ids, MyData
 	}
 }
 
-// #define INDEX_ID_TEST(c, tid, num_clusters) (c) + tid *num_clusters
-
-// __global__ void ReduceDataPointsTEST(MyDataType **features, int *cluster_ids, MyDataType **centroids_features,
-// 									 const int count_in, CountType *count_out, const int num_data_points, const int num_features, const int num_clusters)
-// {
-// 	extern __shared__ CountType shm_1[];
-// 	const int tid = threadIdx.x;
-// 	const int gid = blockIdx.x * (blockDim.x * 2) + threadIdx.x;
-
-// 	// jakbybyły tempalte to można by trochę obliczeń zrobić w czasie kompilacji głownie indexy
-// 	if (gid >= num_data_points)
-// 	{
-// 		return;
-// 	}
-// 	// // shm[(f1{c1,c2,c3,c4,c5},f2{c1,c2,c3,c4,c5}), (f1{c1,c2,c3,c4,c5},f2{c1,c2,c3,c4,c5}),..., (f1{c1,c2,c3,c4,c5},f2{c1,c2,c3,c4,c5}) ]
-// 	// shm[(f1{c1,c2,c3,c4,c5},f2{c1,c2,c3,c4,c5},{count1,...,count5}), (f1{c1,c2,c3,c4,c5},f2{c1,c2,c3,c4,c5},{count1,...,count5}),..., (f1{c1,c2,c3,c4,c5},f2{c1,c2,c3,c4,c5},{count1,...,count5}) ]
-
-// 	int c1, c2;
-
-// 	for (int c = 0; c < num_clusters; ++c)
-// 	{
-// 		shm_1[INDEX_ID_TEST(c, tid, num_clusters)] = 0;
-// 	}
-
-// 	c1 = cluster_ids[gid];
-
-// 	if (gid + blockDim.x < num_data_points)
-// 	{
-// 		c2 = cluster_ids[gid + blockDim.x];
-// 	}
-// 	if (count_in)
-// 		shm_1[INDEX_ID_TEST(c1, tid, num_clusters)] = count_in;
-// 	else
-// 		shm_1[INDEX_ID_TEST(c1, tid, num_clusters)] = count_out[gid];
-
-// 	if (gid + blockDim.x < num_data_points)
-// 	{
-// 		if (count_in)
-// 			shm_1[INDEX_ID_TEST(c2, tid, num_clusters)] += count_in;
-// 		else
-// 			shm_1[INDEX_ID_TEST(c2, tid, num_clusters)] += count_out[gid + blockDim.x];
-// 	}
-// 	// else
-// 	// 	return;
-// 	__syncthreads();
-
-// 	for (unsigned int stride = blockDim.x / 2; stride > 0; stride /= 2)
-// 	{
-// 		if (tid < stride)
-// 		{
-// 			for (int c = 0; c < num_clusters; ++c)
-// 			{
-// 				shm_1[INDEX_ID_TEST(c, tid, num_clusters)] += shm_1[INDEX_ID_TEST(c, (tid + stride), num_clusters)];
-// 			}
-// 		}
-// 		__syncthreads();
-// 	}
-
-// 	if (tid == 0)
-// 	{
-// 		for (int c = 0; c < num_clusters; ++c)
-// 		{
-// 			// [{count1,...,count5},{count1,...,count5},..,
-// 			count_out[blockIdx.x * num_clusters + c] = shm_1[INDEX_ID_TEST(c, 0, num_clusters)];
-// 		}
-// 	}
-// }
 
 #define INDEX_C(c, tid, num_clusters) c + (tid * num_clusters)
 __global__ void ReduceDataPointsCountPoints(const int *cluster_ids,
@@ -235,6 +168,7 @@ __global__ void ReduceDataPointsCountPoints(const int *cluster_ids,
 			count_out[blockIdx.x * num_clusters + c] = shm_c[INDEX_C(c, 0, num_clusters)];
 		}
 	}
+	__syncthreads();
 }
 
 #define INDEX_F(c, tid, num_clusters) c + (tid * num_clusters)
@@ -275,7 +209,7 @@ __global__ void ReduceDataPointsByFeatures(MyDataType *features, const int *clus
 
 	for (unsigned int stride = blockDim.x / 2; stride > 0; stride /= 2)
 	{
-		if (tid < stride && tid<active_threads_count)
+		if (tid < stride && tid < active_threads_count)
 		{
 			for (int c = 0; c < num_clusters; ++c)
 			{
@@ -291,6 +225,7 @@ __global__ void ReduceDataPointsByFeatures(MyDataType *features, const int *clus
 			out[c + blockIdx.x * num_clusters] = shm_f[INDEX_F(c, 0, num_clusters)];
 		}
 	}
+	__syncthreads();
 }
 
 __global__ void FindNewCentroids(DataPoints *centroids, CountType *count, DataPoints *reduced_points)
@@ -304,6 +239,7 @@ __global__ void FindNewCentroids(DataPoints *centroids, CountType *count, DataPo
 		return;
 	}
 	centroids->features_array[f][c] = reduced_points->features_array[f][c] / (MyDataType)count[c];
+__syncthreads();
 }
 
 __global__ void InitPointsWithCentroidsIds(DataPoints *points, int k, int num_points)
@@ -314,6 +250,7 @@ __global__ void InitPointsWithCentroidsIds(DataPoints *points, int k, int num_po
 		return;
 	}
 	points->cluster_id_of_point[gid] = gid % k;
+__syncthreads();
 }
 
 int RoundToPowerOf2(int n)
@@ -331,7 +268,7 @@ int RoundToPowerOf2(int n)
 	return 1 << count;
 }
 
-#define DEBUG 0
+#define DEBUG 1
 #define MAX_SHM_SIZE 48 * 1024
 #define DEFAULT_NUM_THREADS 1024l
 #define CALCULATE_SHM_SIZE(num_features, num_clusters, num_threads) num_threads *(num_features + 1) * num_clusters * sizeof(MyDataType)
@@ -468,7 +405,7 @@ int GetNumBlocks(int num_threads, int cur_num_blocks, int num_clusters)
 }
 // #define cudaDeviceScheduleBlockingSync 0x04
 // #define cudaDeviceScheduleBlockingSync 0x04
-#define cudaDeviceScheduleBlockingSync 0x04
+// #define cudaDeviceScheduleBlockingSync 0x04
 #define NUM_STREAMS 1 + 1
 // cudaStream_t stream[NUM_STREAMS];
 // zmiana liczy features wpływa na wynik xD
@@ -481,16 +418,21 @@ void ReduceFeature(DataPoints *points, CountType *ids_count, int num_features, i
 	size_t shm_size = sizeof(MyDataType) * num_threads * num_clusters;
 	for (int f = 0; f < num_features; ++f)
 	{
-		ReduceDataPointsByFeatures<<<num_blocks, num_threads, shm_size>>>(points->features_array[f],
-																		  points->cluster_id_of_point, reduced_points->features_array[f],
-																		  N, num_clusters, atc);
+		// ReduceDataPointsByFeatures<<<num_blocks, num_threads, shm_size>>>(points->features_array[f],
+		// 																  points->cluster_id_of_point, reduced_points->features_array[f],
+		// 																  N, num_clusters, atc);
 		// cudaCheckError();
 		// z jakiegos dziwneog powodu brak synchronizacji sprawia że zaczela działać, a z synchronizacja nie działą xD
 	}
 	// sleep(3);
 	shm_size = sizeof(CountType) * num_threads * num_clusters;
-	ReduceDataPointsCountPoints<<<num_blocks, num_threads, shm_size>>>(points->cluster_id_of_point,
-																	   count_in, ids_count, N, num_clusters, atc);
+	// ReduceDataPointsCountPoints<<<num_blocks, num_threads, shm_size>>>(points->cluster_id_of_point,
+	// 																   count_in, ids_count, N, num_clusters, atc);
+
+
+ shm_size  = CALCULATE_SHM_SIZE(num_features,num_clusters,num_threads);
+ReduceDataPoints<<<num_blocks,num_threads,shm_size>>>(points->features_array,points->cluster_id_of_point,reduced_points->features_array,count_in,ids_count,N,num_features,num_clusters,atc);
+
 }
 
 void KMeansOneIterationGpu(DataPoints *points, DataPoints *centroids)
@@ -520,10 +462,10 @@ void KMeansOneIterationGpu(DataPoints *points, DataPoints *centroids)
 
 	// Create and init reduced points, what will be used sum up all points
 	int num_threads = DEFAULT_NUM_THREADS;
-	// while (MAX_SHM_SIZE < CALCULATE_SHM_SIZE(num_features, num_clusters, num_threads))
-	// {
-	// 	num_threads /= 2;
-	// }
+	while (MAX_SHM_SIZE < CALCULATE_SHM_SIZE(num_features, num_clusters, num_threads))
+	{
+		num_threads /= 2;
+	}
 
 	size_t shmem_size = CALCULATE_SHM_SIZE(num_features, num_clusters, num_threads);
 
@@ -536,8 +478,8 @@ void KMeansOneIterationGpu(DataPoints *points, DataPoints *centroids)
 	int num_threads_inti_id = (int)std::min(DEFAULT_NUM_THREADS, num_reduced_points);
 	int num_block_init_id = (int)std::max(std::ceil((num_reduced_points / (double)num_threads_inti_id)), 1.0);
 	reduced_points = AllocateDataPoints(num_features, num_reduced_points);
-	InitPointsWithCentroidsIds<<<num_block_init_id, num_threads_inti_id, 0>>>(reduced_points, num_clusters, num_reduced_points);
-
+	InitPointsWithCentroidsIds<<<num_block_init_id, num_threads_inti_id>>>(reduced_points, num_clusters, num_reduced_points);
+	// cudaDeviceSynchronize();
 	cudaCheckError();
 	cudaMallocManaged(&ids_count, sizeof(CountType) * num_blocks * num_clusters);
 	cudaCheckError();
@@ -563,6 +505,9 @@ void KMeansOneIterationGpu(DataPoints *points, DataPoints *centroids)
 	// 														  points->cluster_id_of_point, reduced_points->features_array,
 	// 														  1, ids_count, N, num_features, num_clusters);
 	ReduceFeature(points, ids_count, num_features, num_clusters, N, 1, &num_threads, &num_blocks, num_threads);
+
+
+	
 	// timer_compute_centroids->Stop();
 	// timer_compute_centroids->Elapsed();
 	cudaCheckError();
@@ -625,30 +570,30 @@ void KMeansOneIterationGpu(DataPoints *points, DataPoints *centroids)
 	// find new centroids
 	FindNewCentroids<<<1, num_features * num_clusters>>>(centroids, ids_count, reduced_points);
 	cudaCheckError();
-	for (int f = 0; f < num_features; ++f)
-	{
-		for (int c = 0; c < num_clusters; ++c)
-		{
-			centroids->features_array[f][c] = reduced_points->features_array[f][c] / (double)ids_count[c];
-		}
-	}
+	// cudaDeviceSynchronize();
+	// for (int f = 0; f < num_features; ++f)
+	// {
+	// 	for (int c = 0; c < num_clusters; ++c)
+	// 	{
+	// 		centroids->features_array[f][c] = reduced_points->features_array[f][c] / (double)ids_count[c];
+	// 	}
+	// }
 	// find new centroids
 
 	// cleanup memory
 	// if (cur_epoch++ == constants::num_epoches - 1)
-	{
+		// cudaDeviceSynchronize();
 		DeallocateDataPoints(reduced_points);
 		cudaCheckError();
 
 		cudaFree(ids_count);
+		// cudaDeviceSynchronize();
 		cudaCheckError();
 		cur_epoch = 0;
-	}
 
 	for (int i = 0; i < NUM_STREAMS; i++)
 	{
 		// cudaStreamDestroy(stream[i]);
 		cudaCheckError();
 	}
-	cudaCheckError();
 }

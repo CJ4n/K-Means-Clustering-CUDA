@@ -45,24 +45,31 @@ double kMeansClustering(DataPoints *point, int epochs, int num_clusters, void (*
 	}
 	for (int epoch = 0; epoch < epochs; ++epoch)
 	{
-		
-
 		// sleep(1);
 		k_means_one_iteration_algorithm(point, centroids);
-// cudaDeviceSynchronize();
+		cudaDeviceSynchronize();
+		
 		cudaCheckError();
-		// sleep(1);
-		final_error = MeanSquareError(point, centroids);
+	// sleep(1);
+
+		// final_error = MeanSquareError(point, centroids);
 		if (!DEBUG)
 		{
 			std::cout << "EPOCH: " << epoch << " ERROR: " << final_error << std::endl;
+			// sleep(1);
 		}
 	}
-
+	// sleep(1);
+	cudaDeviceSynchronize();
+	final_error = MeanSquareError(point, centroids);
+	if (!DEBUG)
+	{
+		std::cout << "EPOCH: " << 123 << " ERROR: " << final_error << std::endl;
+	}
 	DeallocateDataPoints(centroids);
 	return final_error;
 }
-
+template <int N>
 double RunKMeansClustering(void (*k_means_one_iteration_algorithm)(DataPoints *, DataPoints *), std::string alg_name, int num_features, int num_points, int num_cluster, int num_epochs)
 {
 	std::srand(0);
@@ -92,6 +99,7 @@ void DeleteTimers()
 }
 #include <iomanip>
 
+#define NUM_POINTS 1 << 23
 // TODO: zmusic do dzialanie reduce by feature
 int main(int argc, char **argv)
 {
@@ -111,7 +119,7 @@ int main(int argc, char **argv)
 		//__________________________________CPU_________________________________
 		std::cout << "-----------------CPU------------------" << std::endl;
 		timer_cpu_version->Start();
-		RunKMeansClustering(KMeansOneIterationCpu, "CPU", constants::num_features, constants::num_points, constants::num_cluster, constants::num_epoches);
+		// RunKMeansClustering<NUM_POINTS>((KMeansOneIterationCpu, "CPU", constants::num_features, constants::num_points, constants::num_cluster, constants::num_epoches);
 		timer_cpu_version->Stop();
 		timer_cpu_version->Elapsed();
 		//__________________________________CPU_________________________________
@@ -119,7 +127,7 @@ int main(int argc, char **argv)
 		//__________________________________GPU_________________________________
 		std::cout << "-----------------GPU------------------" << std::endl;
 		timer_gpu_version->Start();
-		RunKMeansClustering(KMeansOneIterationGpu, "GPU", constants::num_features, constants::num_points, constants::num_cluster, constants::num_epoches);
+		RunKMeansClustering<NUM_POINTS>(KMeansOneIterationGpu, "GPU", constants::num_features, constants::num_points, constants::num_cluster, constants::num_epoches);
 		timer_gpu_version->Stop();
 		timer_gpu_version->Elapsed();
 		//__________________________________GPU_________________________________
