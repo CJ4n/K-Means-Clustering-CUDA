@@ -3,6 +3,8 @@
 #include <iostream>
 #include <math.h>
 #include <vector>
+#include <unistd.h>
+#include <iomanip>
 
 #include "Constants.h"
 #include "cudaCheckError.h"
@@ -31,8 +33,7 @@ DataPoints *GetCentroids(DataPoints *point, int num_clusters)
 	}
 	return centroids;
 }
-#define DEBUG 0
-#include <unistd.h>
+#define DEBUG 0 // set to 1, if you want to run program for many num_cluster and num_points at once
 
 double kMeansClustering(DataPoints *point, int epochs, int num_clusters, void (*k_means_one_iteration_algorithm)(DataPoints *, DataPoints *))
 {
@@ -45,26 +46,26 @@ double kMeansClustering(DataPoints *point, int epochs, int num_clusters, void (*
 	}
 	for (int epoch = 0; epoch < epochs; ++epoch)
 	{
-		// sleep(1);
 		k_means_one_iteration_algorithm(point, centroids);
 		cudaDeviceSynchronize();
 
 		cudaCheckError();
+		// COMMENT/UNCOMMENT THIS SLEEP
 		// sleep(1);
 
 		final_error = MeanSquareError(point, centroids);
 		if (!DEBUG)
 		{
 			std::cout << "EPOCH: " << epoch << " ERROR: " << final_error << std::endl;
-			// sleep(1);
 		}
 	}
-	// sleep(1);
-	cudaDeviceSynchronize();
+
 	final_error = MeanSquareError(point, centroids);
 	if (!DEBUG)
 	{
-		std::cout << "EPOCH: " << 123 << " ERROR: " << final_error << std::endl;
+		std::cout << "EPOCH: "
+				  << "afer algorithm"
+				  << " ERROR: " << final_error << std::endl;
 	}
 	DeallocateDataPoints(centroids);
 	return final_error;
@@ -97,9 +98,18 @@ void DeleteTimers()
 	delete timer_memory_allocation_gpu;
 	delete timer_find_closest_centroids;
 }
-#include <iomanip>
 
-// TODO: zmusic do dzialanie reduce by feature
+// jeśli sleep w lini 54 jest odkomentowany to wynik jest dobry, jeśli nie to jest losy, choziaż czasem zdarzy się że jest dobry.
+
+// jeśli DEBUG w pliku kMeansGpu.cu w lini 263 jest ustawiony na 1 do też wynik jest dobry, jak go nie ma to wynik jest losowy, podobnie jak z sleep.
+
+// dodanie sleepa tak właściwe gdzie kolwiek w petli w 47 lini, sprawia że wynik jest dobry.
+
+// dodanie sleepa na początku(przed linia 434) lub na końcy pliku(po DeallocateDataPoints(reduced_points); linia 522) kMeansGpu.cu też pomaga, choziaż u mnie jak dam sleepa w lini 433 to pomaga
+// do dla kilku pierwszych epok, ale dla ostanij już nie. Ale to czy pomoże też jest często losowy.
+
+// Dla mnie to wygląda jak jakiś race condition między kolejnymi iteraciami algorytmu, tylko nie mam pojęcia dlaczego miałby w ogóle wysępować.
+
 int main(int argc, char **argv)
 {
 
@@ -118,7 +128,7 @@ int main(int argc, char **argv)
 		//__________________________________CPU_________________________________
 		std::cout << "-----------------CPU------------------" << std::endl;
 		timer_cpu_version->Start();
-		 RunKMeansClustering(KMeansOneIterationCpu, "CPU", NUM_FEATURES, NUM_POINTS, NUM_CLUSTERS, NUM_EPOCHES);
+		RunKMeansClustering(KMeansOneIterationCpu, "CPU", NUM_FEATURES, NUM_POINTS, NUM_CLUSTERS, NUM_EPOCHES);
 		timer_cpu_version->Stop();
 		timer_cpu_version->Elapsed();
 		//__________________________________CPU_________________________________
@@ -144,25 +154,25 @@ int main(int argc, char **argv)
 		// SaveCsv(point, "Input.csv");
 		// // DeallocateDataPoints(point);
 	}
-	else
+	else // test for many combinations of params
 	{
-		int f=NUM_FEATURES;
+		int f = NUM_FEATURES;
 		// for (int f = 1; f < 7; f++)
-			for (int c = 3; c < 7; c++)
-				for (int i = 17; i < 22; i++)
+		for (int c = 3; c < 7; c++)
+			for (int i = 17; i < 22; i++)
+			{
+				int num_points = 1 << i;
+				// problme bo numfeartes is tempalte a tu f sie zwiskza !!!!
+				const double exact_error = RunKMeansClustering(KMeansOneIterationCpu, "CPU", f, num_points, c, NUM_EPOCHES);
+				const double gpu_error = RunKMeansClustering(KMeansOneIterationGpu<NUM_FEATURES>, "GPU", f, num_points, c, NUM_EPOCHES);
+				if (std::abs(exact_error - gpu_error) > 10e-7)
 				{
-					int num_points = 1 << i;
-// problme bo numfeartes is tempalte a tu f sie zwiskza !!!!
-					const double exact_error = RunKMeansClustering(KMeansOneIterationCpu, "CPU", f, num_points, c, NUM_EPOCHES);
-					const double gpu_error = RunKMeansClustering(KMeansOneIterationGpu<NUM_FEATURES>, "GPU", f, num_points, c, NUM_EPOCHES);
-					if (std::abs(exact_error - gpu_error) > 10e-7)
-					{
-						std::cout << "<<|||||||||||||||||||||||||dfd|||"
-								  << "num_cluster: " << c << " num_feature: " << f << " num_points: i<<" << i << "||||||||||||||||||||||||||||" << std::endl;
-						std::cout << "exact_error: " << exact_error << std::endl;
-						std::cout << "gpu_error:   " << gpu_error << std::endl;
-					}
+					std::cout << "<<|||||||||||||||||||||||||dfd|||"
+							  << "num_cluster: " << c << " num_feature: " << f << " num_points: i<<" << i << "||||||||||||||||||||||||||||" << std::endl;
+					std::cout << "exact_error: " << exact_error << std::endl;
+					std::cout << "gpu_error:   " << gpu_error << std::endl;
 				}
+			}
 	}
 	DeleteTimers();
 	return 0;
