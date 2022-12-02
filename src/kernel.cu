@@ -48,11 +48,11 @@ double kMeansClustering(DataPoints *point, int epochs, int num_clusters, void (*
 		// sleep(1);
 		k_means_one_iteration_algorithm(point, centroids);
 		cudaDeviceSynchronize();
-		
-		cudaCheckError();
-	// sleep(1);
 
-		// final_error = MeanSquareError(point, centroids);
+		cudaCheckError();
+		// sleep(1);
+
+		final_error = MeanSquareError(point, centroids);
 		if (!DEBUG)
 		{
 			std::cout << "EPOCH: " << epoch << " ERROR: " << final_error << std::endl;
@@ -69,7 +69,7 @@ double kMeansClustering(DataPoints *point, int epochs, int num_clusters, void (*
 	DeallocateDataPoints(centroids);
 	return final_error;
 }
-template <int N>
+
 double RunKMeansClustering(void (*k_means_one_iteration_algorithm)(DataPoints *, DataPoints *), std::string alg_name, int num_features, int num_points, int num_cluster, int num_epochs)
 {
 	std::srand(0);
@@ -99,7 +99,6 @@ void DeleteTimers()
 }
 #include <iomanip>
 
-#define NUM_POINTS 1 << 23
 // TODO: zmusic do dzialanie reduce by feature
 int main(int argc, char **argv)
 {
@@ -119,7 +118,7 @@ int main(int argc, char **argv)
 		//__________________________________CPU_________________________________
 		std::cout << "-----------------CPU------------------" << std::endl;
 		timer_cpu_version->Start();
-		// RunKMeansClustering<NUM_POINTS>((KMeansOneIterationCpu, "CPU", constants::num_features, constants::num_points, constants::num_cluster, constants::num_epoches);
+		 RunKMeansClustering(KMeansOneIterationCpu, "CPU", NUM_FEATURES, NUM_POINTS, NUM_CLUSTERS, NUM_EPOCHES);
 		timer_cpu_version->Stop();
 		timer_cpu_version->Elapsed();
 		//__________________________________CPU_________________________________
@@ -127,7 +126,7 @@ int main(int argc, char **argv)
 		//__________________________________GPU_________________________________
 		std::cout << "-----------------GPU------------------" << std::endl;
 		timer_gpu_version->Start();
-		RunKMeansClustering<NUM_POINTS>(KMeansOneIterationGpu, "GPU", constants::num_features, constants::num_points, constants::num_cluster, constants::num_epoches);
+		RunKMeansClustering(KMeansOneIterationGpu<NUM_FEATURES>, "GPU", NUM_FEATURES, NUM_POINTS, NUM_CLUSTERS, NUM_EPOCHES);
 		timer_gpu_version->Stop();
 		timer_gpu_version->Elapsed();
 		//__________________________________GPU_________________________________
@@ -147,18 +146,19 @@ int main(int argc, char **argv)
 	}
 	else
 	{
-		for (constants::num_features = 1; constants::num_features < 7; constants::num_features++)
-			for (constants::num_cluster = 3; constants::num_cluster < 7; constants::num_cluster++)
+		int f=NUM_FEATURES;
+		// for (int f = 1; f < 7; f++)
+			for (int c = 3; c < 7; c++)
 				for (int i = 17; i < 22; i++)
 				{
-					constants::num_points = 1 << i;
-
-					const double exact_error = RunKMeansClustering(KMeansOneIterationCpu, "CPU", constants::num_features, constants::num_points, constants::num_cluster, constants::num_epoches);
-					const double gpu_error = RunKMeansClustering(KMeansOneIterationGpu, "GPU", constants::num_features, constants::num_points, constants::num_cluster, constants::num_epoches);
+					int num_points = 1 << i;
+// problme bo numfeartes is tempalte a tu f sie zwiskza !!!!
+					const double exact_error = RunKMeansClustering(KMeansOneIterationCpu, "CPU", f, num_points, c, NUM_EPOCHES);
+					const double gpu_error = RunKMeansClustering(KMeansOneIterationGpu<NUM_FEATURES>, "GPU", f, num_points, c, NUM_EPOCHES);
 					if (std::abs(exact_error - gpu_error) > 10e-7)
 					{
 						std::cout << "<<|||||||||||||||||||||||||dfd|||"
-								  << "num_cluster: " << constants::num_cluster << " num_feature: " << constants::num_features << " num_points: i<<" << i << "||||||||||||||||||||||||||||" << std::endl;
+								  << "num_cluster: " << c << " num_feature: " << f << " num_points: i<<" << i << "||||||||||||||||||||||||||||" << std::endl;
 						std::cout << "exact_error: " << exact_error << std::endl;
 						std::cout << "gpu_error:   " << gpu_error << std::endl;
 					}
