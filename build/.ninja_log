@@ -84,3 +84,14 @@
 2541	2691	1670075839373162063	mainCudaApp	838ab90b61ca24d7
 3	2594	1670077508435996184	CMakeFiles/mainCudaApp.dir/src/kernel.cu.o	b0eed61725a395d8
 2594	2740	1670077508595997580	mainCudaApp	838ab90b61ca24d7
+0	2571	1670086817172531503	CMakeFiles/mainCudaApp.dir/src/GeneratePoints.cu.o	6e0d42c9f9666f5a
+1	2800	1670086817400534902	CMakeFiles/mainCudaApp.dir/src/findClosestCentriods.cu.o	a8183351cb131019
+3	3244	1670086817844541522	CMakeFiles/mainCudaApp.dir/src/timer.cu.o	caa5444b38c0deec
+1	3319	1670086817920542655	CMakeFiles/mainCudaApp.dir/src/kMeansCpu.cu.o	b2c9cb903c12a26c
+0	3731	1670086818328548739	CMakeFiles/mainCudaApp.dir/src/dataPoints.cu.o	80491d653ed0459a
+1	3814	1670086818412549992	CMakeFiles/mainCudaApp.dir/src/kMeansGpu.cu.o	fa477156bbf6ef9f
+2	3949	1670086818548552019	CMakeFiles/mainCudaApp.dir/src/kernel.cu.o	b0eed61725a395d8
+2	6876	1670086821472595642	CMakeFiles/mainCudaApp.dir/src/kMeansGpuThrust.cu.o	f2de9378438ab649
+6876	7035	1670086821636598091	mainCudaApp	838ab90b61ca24d7
+3	2665	1670086834496790358	CMakeFiles/mainCudaApp.dir/src/kernel.cu.o	b0eed61725a395d8
+2665	2864	1670086834696793353	mainCudaApp	838ab90b61ca24d7
