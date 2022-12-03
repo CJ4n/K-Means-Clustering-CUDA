@@ -37,6 +37,7 @@ float GpuTimer::Elapsed()
 
 GpuTimer *timer_find_closest_centroids;
 GpuTimer *timer_compute_centroids;
+GpuTimer * timer_data_generations;
 GpuTimer *timer_memory_allocation_gpu;
 GpuTimer *timer_gpu_version;
 GpuTimer *timer_thurst_version;

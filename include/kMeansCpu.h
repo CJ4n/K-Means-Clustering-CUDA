@@ -1,4 +1,4 @@
-# pragma once
+#pragma once
 #include "dataPoints.h"
-
- void KMeansOneIterationCpu(DataPoints *points, DataPoints *centroids);
+template <int N_FEATURES>
+void KMeansOneIterationCpu(DataPoints *points, DataPoints *centroids, const int num_clusters, const int num_data_points);

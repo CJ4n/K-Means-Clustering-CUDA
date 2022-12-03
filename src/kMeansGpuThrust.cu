@@ -10,7 +10,7 @@
 #include "vector"
 #include "string"
 
-void KMeansOneIterationGpuThurst(DataPoints *points, DataPoints *centroids)
+void KMeansOneIterationGpuThurst(DataPoints *points, DataPoints *centroids, const int num_clusters, const int num_data_points)
 {
 	// const int N = points->num_data_points;
 	// const int num_threads = 1024;
