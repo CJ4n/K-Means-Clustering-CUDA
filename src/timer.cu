@@ -4,8 +4,8 @@
 GpuTimer::GpuTimer()
 {
       total_time = 0;
-      cudaEventCreate(&start);
 
+      cudaEventCreate(&start);
       cudaEventCreate(&stop);
 }
 

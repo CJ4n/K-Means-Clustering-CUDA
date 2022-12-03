@@ -10,6 +10,7 @@ DataPoints *GeneratePoints(const int num_features, const int num_points)
     {
         timer_data_generations->Start();
     }
+    
     DataPoints *data = AllocateDataPoints(num_features, num_points);
     // data->num_features = num_features;
     // data->num_data_points = num_points;

@@ -39,7 +39,7 @@ double kMeansClustering(DataPoints *point, int epochs, int num_clusters, int num
 {
 	DataPoints *centroids = GetCentroids(point, num_clusters, num_features);
 	double final_error = 0;
-	final_error = MeanSquareError(point, centroids, num_points,  num_features);
+	final_error = MeanSquareError(point, centroids, num_points, num_features);
 	if (!DEBUG)
 	{
 		std::cout << "EPOCH: " << -1 << " ERROR: " << final_error << std::endl;
@@ -66,22 +66,24 @@ double kMeansClustering(DataPoints *point, int epochs, int num_clusters, int num
 				  << "afer algorithm"
 				  << " ERROR: " << final_error << std::endl;
 	}
-	DeallocateDataPoints(centroids,num_features);
+	DeallocateDataPoints(centroids, num_features);
 	return final_error;
 }
 
 double RunKMeansClustering(void (*k_means_one_iteration_algorithm)(DataPoints *, DataPoints *, const int, const int), std::string alg_name, int num_features, int num_points, int num_cluster, int num_epochs)
 {
 	std::srand(0);
+	cudaCheckError();
+
 	DataPoints *point = GeneratePoints(num_features, num_points);
 	double error = kMeansClustering(point, num_epochs, num_cluster, num_features, num_points, k_means_one_iteration_algorithm);
-	DeallocateDataPoints(point,num_features);
+	DeallocateDataPoints(point, num_features);
 	return error;
 }
 void InitTimers()
 {
-	timer_find_closest_centroids = new GpuTimer();
 	timer_compute_centroids = new GpuTimer();
+	timer_find_closest_centroids = new GpuTimer();
 	timer_memory_allocation_gpu = new GpuTimer();
 	timer_gpu_version = new GpuTimer();
 	timer_thurst_version = new GpuTimer();
@@ -92,11 +94,11 @@ void InitTimers()
 void DeleteTimers()
 {
 	delete timer_compute_centroids;
-	delete timer_cpu_version;
+	delete timer_find_closest_centroids;
+	delete timer_memory_allocation_gpu;
 	delete timer_gpu_version;
 	delete timer_thurst_version;
-	delete timer_memory_allocation_gpu;
-	delete timer_find_closest_centroids;
+	delete timer_cpu_version;
 	delete timer_data_generations;
 }
 
@@ -113,7 +115,6 @@ void DeleteTimers()
 
 int main(int argc, char **argv)
 {
-
 	std::cout << std::setprecision(15);
 	InitTimers();
 	if (!DEBUG)
@@ -129,6 +130,7 @@ int main(int argc, char **argv)
 		//__________________________________CPU_________________________________
 		std::cout << "-----------------CPU------------------" << std::endl;
 		timer_cpu_version->Start();
+
 		RunKMeansClustering(KMeansOneIterationCpu<NUM_FEATURES>, "CPU", NUM_FEATURES, NUM_POINTS, NUM_CLUSTERS, NUM_EPOCHES);
 		timer_cpu_version->Stop();
 		timer_cpu_version->Elapsed();

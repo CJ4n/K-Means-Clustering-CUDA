@@ -125,6 +125,7 @@ build CMakeFiles/mainCudaApp.dir/src/timer.cu.o: CUDA_COMPILER__mainCudaApp_ /ho
 # Link the executable mainCudaApp
 
 build mainCudaApp: CUDA_EXECUTABLE_LINKER__mainCudaApp_ CMakeFiles/mainCudaApp.dir/src/GeneratePoints.cu.o CMakeFiles/mainCudaApp.dir/src/dataPoints.cu.o CMakeFiles/mainCudaApp.dir/src/findClosestCentriods.cu.o CMakeFiles/mainCudaApp.dir/src/kMeansCpu.cu.o CMakeFiles/mainCudaApp.dir/src/kMeansGpu.cu.o CMakeFiles/mainCudaApp.dir/src/kMeansGpuThrust.cu.o CMakeFiles/mainCudaApp.dir/src/kernel.cu.o CMakeFiles/mainCudaApp.dir/src/timer.cu.o
+  LINK_FLAGS = -fsanitize=address -lasan
   LINK_LIBRARIES = -lcudadevrt  -lcudart_static  -lrt  -lpthread  -ldl
   OBJECT_DIR = CMakeFiles/mainCudaApp.dir
   POST_BUILD = :
