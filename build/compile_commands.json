@@ -1,0 +1,42 @@
+[
+{
+  "directory": "/home/jan/Desktop/K-Means-Clustering-CUDA/build",
+  "command": "/usr/bin/nvcc -forward-unknown-to-host-compiler -I/home/jan/Desktop/K-Means-Clustering-CUDA/include -g -g -G -x cu -c /home/jan/Desktop/K-Means-Clustering-CUDA/src/GeneratePoints.cu -o CMakeFiles/mainCudaApp.dir/src/GeneratePoints.cu.o",
+  "file": "/home/jan/Desktop/K-Means-Clustering-CUDA/src/GeneratePoints.cu"
+},
+{
+  "directory": "/home/jan/Desktop/K-Means-Clustering-CUDA/build",
+  "command": "/usr/bin/nvcc -forward-unknown-to-host-compiler -I/home/jan/Desktop/K-Means-Clustering-CUDA/include -g -g -G -x cu -c /home/jan/Desktop/K-Means-Clustering-CUDA/src/dataPoints.cu -o CMakeFiles/mainCudaApp.dir/src/dataPoints.cu.o",
+  "file": "/home/jan/Desktop/K-Means-Clustering-CUDA/src/dataPoints.cu"
+},
+{
+  "directory": "/home/jan/Desktop/K-Means-Clustering-CUDA/build",
+  "command": "/usr/bin/nvcc -forward-unknown-to-host-compiler -I/home/jan/Desktop/K-Means-Clustering-CUDA/include -g -g -G -x cu -c /home/jan/Desktop/K-Means-Clustering-CUDA/src/findClosestCentriods.cu -o CMakeFiles/mainCudaApp.dir/src/findClosestCentriods.cu.o",
+  "file": "/home/jan/Desktop/K-Means-Clustering-CUDA/src/findClosestCentriods.cu"
+},
+{
+  "directory": "/home/jan/Desktop/K-Means-Clustering-CUDA/build",
+  "command": "/usr/bin/nvcc -forward-unknown-to-host-compiler -I/home/jan/Desktop/K-Means-Clustering-CUDA/include -g -g -G -x cu -c /home/jan/Desktop/K-Means-Clustering-CUDA/src/kMeansCpu.cu -o CMakeFiles/mainCudaApp.dir/src/kMeansCpu.cu.o",
+  "file": "/home/jan/Desktop/K-Means-Clustering-CUDA/src/kMeansCpu.cu"
+},
+{
+  "directory": "/home/jan/Desktop/K-Means-Clustering-CUDA/build",
+  "command": "/usr/bin/nvcc -forward-unknown-to-host-compiler -I/home/jan/Desktop/K-Means-Clustering-CUDA/include -g -g -G -x cu -c /home/jan/Desktop/K-Means-Clustering-CUDA/src/kMeansGpu.cu -o CMakeFiles/mainCudaApp.dir/src/kMeansGpu.cu.o",
+  "file": "/home/jan/Desktop/K-Means-Clustering-CUDA/src/kMeansGpu.cu"
+},
+{
+  "directory": "/home/jan/Desktop/K-Means-Clustering-CUDA/build",
+  "command": "/usr/bin/nvcc -forward-unknown-to-host-compiler -I/home/jan/Desktop/K-Means-Clustering-CUDA/include -g -g -G -x cu -c /home/jan/Desktop/K-Means-Clustering-CUDA/src/kMeansGpuThrust.cu -o CMakeFiles/mainCudaApp.dir/src/kMeansGpuThrust.cu.o",
+  "file": "/home/jan/Desktop/K-Means-Clustering-CUDA/src/kMeansGpuThrust.cu"
+},
+{
+  "directory": "/home/jan/Desktop/K-Means-Clustering-CUDA/build",
+  "command": "/usr/bin/nvcc -forward-unknown-to-host-compiler -I/home/jan/Desktop/K-Means-Clustering-CUDA/include -g -g -G -x cu -c /home/jan/Desktop/K-Means-Clustering-CUDA/src/kernel.cu -o CMakeFiles/mainCudaApp.dir/src/kernel.cu.o",
+  "file": "/home/jan/Desktop/K-Means-Clustering-CUDA/src/kernel.cu"
+},
+{
+  "directory": "/home/jan/Desktop/K-Means-Clustering-CUDA/build",
+  "command": "/usr/bin/nvcc -forward-unknown-to-host-compiler -I/home/jan/Desktop/K-Means-Clustering-CUDA/include -g -g -G -x cu -c /home/jan/Desktop/K-Means-Clustering-CUDA/src/timer.cu -o CMakeFiles/mainCudaApp.dir/src/timer.cu.o",
+  "file": "/home/jan/Desktop/K-Means-Clustering-CUDA/src/timer.cu"
+}
+]

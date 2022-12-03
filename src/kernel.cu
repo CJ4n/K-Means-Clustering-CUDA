@@ -158,7 +158,7 @@ int main(int argc, char **argv)
 		int f = NUM_FEATURES;
 		// for (int f = 1; f < 7; f++)
 		for (int c = 3; c < 12; c++)
-			for (int i = 17; i < 26; i++)
+			for (int i = 17; i < 25; i++)
 			{
 				int num_points = 1 << i;
 				// problme bo numfeartes is tempalte a tu f sie zwiskza !!!!
