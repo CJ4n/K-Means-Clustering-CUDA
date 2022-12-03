@@ -65,42 +65,42 @@ MyDataType MeanSquareError(const DataPoints *point,const DataPoints *centroid)
 	return error / point->num_data_points;
 }
 
-DataPoints *ReadCsv()
-{
-	std::vector<Point> points;
-	std::string line;
-	std::ifstream file("/home/jan/Desktop/K-Means-Clustering-CUDA/mall_data.csv");
-	// std::ifstream file("../mall_data.csv");
-	while (std::getline(file, line))
-	{
-		std::stringstream lineStream(line);
-		std::string bit;
-		float x, y;
-		getline(lineStream, bit, ',');
-		x = std::stof(bit);
-		getline(lineStream, bit, '\n');
-		y = stof(bit);
+// DataPoints *ReadCsv()
+// {
+// 	std::vector<Point> points;
+// 	std::string line;
+// 	std::ifstream file("/home/jan/Desktop/K-Means-Clustering-CUDA/mall_data.csv");
+// 	// std::ifstream file("../mall_data.csv");
+// 	while (std::getline(file, line))
+// 	{
+// 		std::stringstream lineStream(line);
+// 		std::string bit;
+// 		float x, y;
+// 		getline(lineStream, bit, ',');
+// 		x = std::stof(bit);
+// 		getline(lineStream, bit, '\n');
+// 		y = stof(bit);
 
-		points.push_back(Point(x, y));
-	}
-	file.close();
+// 		points.push_back(Point(x, y));
+// 	}
+// 	file.close();
 
-	DataPoints *point = AllocateDataPoints(2, points.size());
-	int i = 0;
-	for (std::vector<Point>::iterator it = points.begin(); it != points.end(); ++it)
-	{
-		float XY[2];
-		XY[0] = it->x;
-		XY[1] = it->y;
-		for (int feature = 0; feature < point->num_features; ++feature)
-		{
-			point->features_array[feature][i] = XY[feature];
-		}
-		point->cluster_id_of_point[i] = it->cluster;
-		i++;
-	}
-	return point;
-}
+// 	DataPoints *point = AllocateDataPoints(2, points.size());
+// 	int i = 0;
+// 	for (std::vector<Point>::iterator it = points.begin(); it != points.end(); ++it)
+// 	{
+// 		float XY[2];
+// 		XY[0] = it->x;
+// 		XY[1] = it->y;
+// 		for (int feature = 0; feature < point->num_features; ++feature)
+// 		{
+// 			point->features_array[feature][i] = XY[feature];
+// 		}
+// 		point->cluster_id_of_point[i] = it->cluster;
+// 		i++;
+// 	}
+// 	return point;
+// }
 
 void SaveCsv(const DataPoints *point,const std::string file_name)
 {

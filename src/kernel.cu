@@ -52,7 +52,7 @@ double kMeansClustering(DataPoints *point, int epochs, int num_clusters, void (*
 		cudaCheckError();
 		// COMMENT/UNCOMMENT THIS SLEEP
 		// sleep(1);
-		// final_error = MeanSquareError(point, centroids);
+		//final_error = MeanSquareError(point, centroids);
 		if (!DEBUG)
 		{
 			std::cout << "EPOCH: " << epoch << " ERROR: " << final_error << std::endl;
@@ -157,8 +157,8 @@ int main(int argc, char **argv)
 	{
 		int f = NUM_FEATURES;
 		// for (int f = 1; f < 7; f++)
-		for (int c = 3; c < 7; c++)
-			for (int i = 17; i < 22; i++)
+		for (int c = 3; c < 12; c++)
+			for (int i = 17; i < 26; i++)
 			{
 				int num_points = 1 << i;
 				// problme bo numfeartes is tempalte a tu f sie zwiskza !!!!
