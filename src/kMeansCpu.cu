@@ -31,10 +31,10 @@ void KMeansOneIterationCpu(DataPoints *points, DataPoints *centroids)
 	// get nearest cluster
 	for (int p = 0; p < points->num_data_points; ++p)
 	{
-		float min_dist= __FLT_MAX__;
+		MyDataType min_dist= __DBL_MAX__;
 		for (int c = 0; c < centroids->num_data_points; ++c)
 		{
-			float dist = Distance(centroids, points, p, c);
+			MyDataType dist = Distance(centroids, points, p, c);
 			if (dist < min_dist)
 			{
 				min_dist = dist;

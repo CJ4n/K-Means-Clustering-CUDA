@@ -33,7 +33,7 @@ DataPoints *GetCentroids(DataPoints *point, int num_clusters)
 	}
 	return centroids;
 }
-#define DEBUG 0 // set to 1, if you want to run program for many num_cluster and num_points at once
+#define DEBUG 1 // set to 1, if you want to run program for many num_cluster and num_points at once
 
 double kMeansClustering(DataPoints *point, int epochs, int num_clusters, void (*k_means_one_iteration_algorithm)(DataPoints *, DataPoints *))
 {
@@ -52,8 +52,7 @@ double kMeansClustering(DataPoints *point, int epochs, int num_clusters, void (*
 		cudaCheckError();
 		// COMMENT/UNCOMMENT THIS SLEEP
 		// sleep(1);
-
-		final_error = MeanSquareError(point, centroids);
+		// final_error = MeanSquareError(point, centroids);
 		if (!DEBUG)
 		{
 			std::cout << "EPOCH: " << epoch << " ERROR: " << final_error << std::endl;

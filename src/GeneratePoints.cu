@@ -11,7 +11,7 @@ DataPoints *GeneratePoints(const int num_features, const int num_points)
 
     for (int p = 0; p < num_points; ++p)
     {
-        data->cluster_id_of_point[p] = -1;
+        data->cluster_id_of_point[p] = 0;
         for (int f = 0; f < num_features; ++f)
         {
             const int range = MAX_FEATURE_VALUE - MIN_FEATURE_VALUE + 1;
