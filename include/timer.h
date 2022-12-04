@@ -59,3 +59,4 @@ extern GpuTimer *timer_memory_allocation_gpu;
 extern GpuTimer *timer_gpu_version;
 extern GpuTimer *timer_thurst_version;
 extern GpuTimer *timer_cpu_version;
+extern GpuTimer *timer_data_generations;

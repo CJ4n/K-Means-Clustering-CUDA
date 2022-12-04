@@ -15,7 +15,7 @@ cmake_minimum_required(VERSION 3.16)
 include_directories(include) 
 # add_compile_options(-g -G -Xcompiler -rdynamic -lineinfo )
 add_compile_options(-g -G  )
-# add_link_options( -fsanitize=address -lasan)
+
 # find_package(Thrust REQUIRED)
 # thrust_create_target(Thrust)
 project(CudaApp LANGUAGES CXX CUDA)

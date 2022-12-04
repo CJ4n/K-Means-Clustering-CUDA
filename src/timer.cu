@@ -41,3 +41,4 @@ GpuTimer *timer_memory_allocation_gpu;
 GpuTimer *timer_gpu_version;
 GpuTimer *timer_thurst_version;
 GpuTimer *timer_cpu_version;
+GpuTimer *timer_data_generations;

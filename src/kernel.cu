@@ -33,7 +33,6 @@ DataPoints *GetCentroids(DataPoints *point, int num_clusters)
 	}
 	return centroids;
 }
- // set to 1, if you want to run program for many num_cluster and num_points at once
 
 double kMeansClustering(DataPoints *point, int epochs, int num_clusters, void (*k_means_one_iteration_algorithm)(DataPoints *, DataPoints *))
 {
@@ -51,13 +50,12 @@ double kMeansClustering(DataPoints *point, int epochs, int num_clusters, void (*
 
 		cudaCheckError();
 		// COMMENT/UNCOMMENT THIS SLEEP
-		// sleep(1);
-		//final_error = MeanSquareError(point, centroids);
+		// final_error = MeanSquareError(point, centroids);
 		if (!DEBUG_PROGRAM)
 		{
 			std::cout << "EPOCH: " << epoch << " ERROR: " << final_error << std::endl;
 		}
-	} 
+	}
 
 	final_error = MeanSquareError(point, centroids);
 	if (!DEBUG_PROGRAM)
@@ -72,6 +70,7 @@ double kMeansClustering(DataPoints *point, int epochs, int num_clusters, void (*
 
 double RunKMeansClustering(void (*k_means_one_iteration_algorithm)(DataPoints *, DataPoints *), std::string alg_name, int num_features, int num_points, int num_cluster, int num_epochs)
 {
+	timer_data_generations->total_time=0;
 	std::srand(0);
 	DataPoints *point = GeneratePoints(num_features, num_points);
 	double error = kMeansClustering(point, num_epochs, num_cluster, k_means_one_iteration_algorithm);
@@ -86,6 +85,7 @@ void InitTimers()
 	timer_gpu_version = new GpuTimer();
 	timer_thurst_version = new GpuTimer();
 	timer_cpu_version = new GpuTimer();
+	timer_data_generations = new GpuTimer();
 }
 
 void DeleteTimers()
@@ -96,6 +96,7 @@ void DeleteTimers()
 	delete timer_thurst_version;
 	delete timer_memory_allocation_gpu;
 	delete timer_find_closest_centroids;
+	delete timer_data_generations;
 }
 
 // jeśli sleep w lini 54 jest odkomentowany to wynik jest dobry, jeśli nie to jest losy, choziaż czasem zdarzy się że jest dobry.
@@ -147,6 +148,7 @@ int main(int argc, char **argv)
 		std::cout << "GPU implementation:     " << timer_gpu_version->total_time << "ms" << std::endl;
 		std::cout << "compute_centroids:      " << timer_compute_centroids->total_time << "ms" << std::endl;
 		std::cout << "find_closest_centroids: " << timer_find_closest_centroids->total_time << "ms" << std::endl;
+		std::cout << "timer_data_generations: " << timer_data_generations->total_time << "ms" << std::endl;
 
 	}
 	else // test for many combinations of params
@@ -160,6 +162,8 @@ int main(int argc, char **argv)
 				// problme bo numfeartes is tempalte a tu f sie zwiskza !!!!
 				const double exact_error = RunKMeansClustering(KMeansOneIterationCpu, "CPU", f, num_points, c, NUM_EPOCHES);
 				const double gpu_error = RunKMeansClustering(KMeansOneIterationGpu<NUM_FEATURES>, "GPU", f, num_points, c, NUM_EPOCHES);
+				std::cout<< "num_cluster: " << c << " num_feature: " << f << " num_points: i<<" << i <<std::endl;
+	
 				if (std::abs(exact_error - gpu_error) > 10e-7)
 				{
 					std::cout << "<<|||||||||||||||||||||||||dfd|||"
