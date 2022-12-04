@@ -262,7 +262,7 @@ int RoundToPowerOf2(int n)
 	return 1 << count;
 }
 
-#define DEBUG 0 // set to 1, if you want display debuging info, such as: sum of all points feature and cluster wise, number of points belonging to each cluster, at different stages of algorithm
+ // set to 1, if you want display debuging info, such as: sum of all points feature and cluster wise, number of points belonging to each cluster, at different stages of algorithm
 #define MAX_SHM_SIZE 48 * 1024
 #define DEFAULT_NUM_THREADS 1024l
 #define CALCULATE_SHM_SIZE_JOIN_REDUCE(num_features, num_clusters, num_threads) num_threads *(num_features + 1) * num_clusters * sizeof(MyDataType)
@@ -526,7 +526,7 @@ void KMeansOneIterationGpu(DataPoints *points, DataPoints *centroids)
 	cudaCheckError();
 
 	// reduce points in `points` and store them in reduced_poitsn
-	if (DEBUG)
+	if (DEBUG_GPU_ITERATION)
 	{
 		debugFunction(points, ids_count, N_FEATURES, num_clusters, num_blocks, num_threads, num_clusters * num_blocks, "BEFORE WHILE REDUCE");
 	}
@@ -552,7 +552,7 @@ void KMeansOneIterationGpu(DataPoints *points, DataPoints *centroids)
 		}
 		cudaCheckError();
 	}
-	if (DEBUG)
+	if (DEBUG_GPU_ITERATION)
 	{
 		debugFunction(points, ids_count, N_FEATURES, num_clusters, num_blocks, num_threads, num_blocks * num_clusters, "AFTER WHILE REDUCE");
 	}
@@ -579,8 +579,8 @@ void KMeansOneIterationGpu(DataPoints *points, DataPoints *centroids)
 			timer_compute_centroids->Elapsed();
 		}
 		cudaCheckError();
-		if (DEBUG)
-		{
+		if (DEBUG_GPU_ITERATION)
+		{ 
 			debugFunction(points, ids_count, N_FEATURES, num_clusters, 1, num_threads, 1 * num_clusters, "AFTER LAST REDUCE");
 		}
 	}

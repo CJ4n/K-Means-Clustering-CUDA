@@ -33,14 +33,14 @@ DataPoints *GetCentroids(DataPoints *point, int num_clusters)
 	}
 	return centroids;
 }
-#define DEBUG 1 // set to 1, if you want to run program for many num_cluster and num_points at once
+ // set to 1, if you want to run program for many num_cluster and num_points at once
 
 double kMeansClustering(DataPoints *point, int epochs, int num_clusters, void (*k_means_one_iteration_algorithm)(DataPoints *, DataPoints *))
 {
 	DataPoints *centroids = GetCentroids(point, num_clusters);
 	double final_error = 0;
 	final_error = MeanSquareError(point, centroids);
-	if (!DEBUG)
+	if (!DEBUG_PROGRAM)
 	{
 		std::cout << "EPOCH: " << -1 << " ERROR: " << final_error << std::endl;
 	}
@@ -53,14 +53,14 @@ double kMeansClustering(DataPoints *point, int epochs, int num_clusters, void (*
 		// COMMENT/UNCOMMENT THIS SLEEP
 		// sleep(1);
 		//final_error = MeanSquareError(point, centroids);
-		if (!DEBUG)
+		if (!DEBUG_PROGRAM)
 		{
 			std::cout << "EPOCH: " << epoch << " ERROR: " << final_error << std::endl;
 		}
-	}
+	} 
 
 	final_error = MeanSquareError(point, centroids);
-	if (!DEBUG)
+	if (!DEBUG_PROGRAM)
 	{
 		std::cout << "EPOCH: "
 				  << "afer algorithm"
@@ -100,7 +100,7 @@ void DeleteTimers()
 
 // jeśli sleep w lini 54 jest odkomentowany to wynik jest dobry, jeśli nie to jest losy, choziaż czasem zdarzy się że jest dobry.
 
-// jeśli DEBUG w pliku kMeansGpu.cu w lini 263 jest ustawiony na 1 do też wynik jest dobry, jak go nie ma to wynik jest losowy, podobnie jak z sleep.
+// jeśli DEBUG_PROGRAM w pliku kMeansGpu.cu w lini 263 jest ustawiony na 1 do też wynik jest dobry, jak go nie ma to wynik jest losowy, podobnie jak z sleep.
 
 // dodanie sleepa tak właściwe gdzie kolwiek w petli w 47 lini, sprawia że wynik jest dobry.
 
@@ -114,7 +114,7 @@ int main(int argc, char **argv)
 
 	std::cout << std::setprecision(15);
 	InitTimers();
-	if (!DEBUG)
+	if (!DEBUG_PROGRAM)
 	{
 		//________________________________THRUST________________________________
 		std::cout << "----------------THURST----------------" << std::endl;
@@ -148,10 +148,6 @@ int main(int argc, char **argv)
 		std::cout << "compute_centroids:      " << timer_compute_centroids->total_time << "ms" << std::endl;
 		std::cout << "find_closest_centroids: " << timer_find_closest_centroids->total_time << "ms" << std::endl;
 
-		// save generated points
-		// DataPoints *point = GeneratePoints(num_features, num_points);
-		// SaveCsv(point, "Input.csv");
-		// // DeallocateDataPoints(point);
 	}
 	else // test for many combinations of params
 	{
