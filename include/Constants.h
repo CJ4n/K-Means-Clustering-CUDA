@@ -11,6 +11,6 @@
  
 
  #define DEBUG_PROGRAM 0
- #define DEBUG_GPU_ITERATION 1
+ #define DEBUG_GPU_ITERATION 0
 
  // niedizalajace: features=5, cluster=8, points=1<24

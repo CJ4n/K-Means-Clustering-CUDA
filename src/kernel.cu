@@ -38,11 +38,11 @@ double kMeansClustering(DataPoints *point, int epochs, int num_clusters, void (*
 {
 	DataPoints *centroids = GetCentroids(point, num_clusters);
 	double final_error = 0;
-	final_error = MeanSquareError(point, centroids);
-	if (!DEBUG_PROGRAM)
-	{
-		std::cout << "EPOCH: " << -1 << " ERROR: " << final_error << std::endl;
-	}
+	// final_error = MeanSquareError(point, centroids);
+	// if (!DEBUG_PROGRAM)
+	// {
+	// 	std::cout << "EPOCH: " << -1 << " ERROR: " << final_error << std::endl;
+	// }
 	for (int epoch = 0; epoch < epochs; ++epoch)
 	{
 		k_means_one_iteration_algorithm(point, centroids);
