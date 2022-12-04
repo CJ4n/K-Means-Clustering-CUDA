@@ -546,7 +546,8 @@ int GetNumBlocks(int num_threads, int cur_num_blocks, int num_clusters)
 	return num_blocks;
 }
 
-int num_streams;
+#define NUM_STREAM (NUM_FEATURES + 1)
+cudaStream_t streams[NUM_STREAM];
 template <int F_NUM>
 void ReduceFeature(DataPoints *points, DataPoints *out, CountType *ids_count, int num_clusters,
 				   int N, CountType count_in, int *num_th, int *num_bl, int atc)
@@ -559,7 +560,7 @@ void ReduceFeature(DataPoints *points, DataPoints *out, CountType *ids_count, in
 		size_t shm_size = CALCULATE_SHM_SIZE_FEATURE_WISE_REDUCE(num_clusters, num_threads);
 		for (int f = 0; f < F_NUM; ++f)
 		{
-			ReduceDataPointsByFeatures<<<num_blocks, num_threads, shm_size>>>(points->features_array[f],
+			ReduceDataPointsByFeatures<<<num_blocks, num_threads, shm_size,streams[f]>>>(points->features_array[f],
 																			  points->cluster_id_of_point, out->features_array[f],
 																			  N, num_clusters, atc);
 
@@ -567,7 +568,7 @@ void ReduceFeature(DataPoints *points, DataPoints *out, CountType *ids_count, in
 		}
 		// sleep(3);
 		shm_size = CALCULATE_SHM_SIZE_COUNT(num_clusters, num_threads);
-		ReduceDataPointsCountPoints<<<num_blocks, num_threads, shm_size>>>(points->cluster_id_of_point,
+		ReduceDataPointsCountPoints<<<num_blocks, num_threads, shm_size,streams[NUM_STREAM-1]>>>(points->cluster_id_of_point,
 																		   count_in, ids_count, N, num_clusters, atc);
 	}
 	if (!RUN_REDUCE_FEATURE_WISE)
@@ -575,12 +576,20 @@ void ReduceFeature(DataPoints *points, DataPoints *out, CountType *ids_count, in
 		size_t shm_size = CALCULATE_SHM_SIZE_JOIN_REDUCE(F_NUM, num_clusters, num_threads);
 		ReduceDataPoints<F_NUM><<<num_blocks, num_threads, shm_size>>>(points->features_array, points->cluster_id_of_point, reduced_points->features_array, count_in, ids_count, N, num_clusters, atc);
 	}
+	
 }
 CountType *ids_count;
 int cur_epoch = 0;
 template <int N_FEATURES>
 void KMeansOneIterationGpu(DataPoints *points, DataPoints *centroids)
 {
+
+	
+
+	for (int i = 0; i < NUM_STREAM; i++)
+	{
+		cudaStreamCreate(&streams[i]);
+	}
 
 	const int num_clusters = centroids->num_data_points;
 	int N = points->num_data_points;
@@ -804,6 +813,11 @@ void KMeansOneIterationGpu(DataPoints *points, DataPoints *centroids)
 		MyDataType err = errors[0] / points->num_data_points;
 		cudaFree(errors);
 		cudaCheckError();
+	}
+
+	for (int i = 0; i < NUM_STREAM; i++)
+	{
+		cudaStreamDestroy(streams[i]);
 	}
 }
 
