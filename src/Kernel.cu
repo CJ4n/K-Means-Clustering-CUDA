@@ -3,14 +3,14 @@
 #include <unistd.h>
 #include <iomanip>
 
-#include "Constants.h"
-#include "cudaCheckError.h"
-#include "dataPoints.h"
+#include "Config.h"
+#include "CudaCheckError.h"
+#include "DataPoints.h"
 #include "GeneratePoints.h"
-#include "kMeansCpu.h"
-#include "kMeansGpu.h"
-#include "kMeansGpuThrust.h"
-#include "timer.h"
+#include "KMeansCpu.h"
+#include "KMeansGpu.h"
+#include "KMeansGpuThrust.h"
+#include "Timer.h"
 
 DataPoints *GetCentroids(DataPoints *point, int num_clusters)
 {
@@ -33,7 +33,10 @@ double kMeansClustering(DataPoints *point, const int num_clusters, MyDataType (*
 {
 	DataPoints *centroids = GetCentroids(point, num_clusters);
 	MyDataType error = 0;
-	for (int epoch = 0; epoch < NUM_EPOCHES; ++epoch)
+	MyDataType last_error = 0;
+	int epoch = 0;
+
+	while (1)
 	{
 		error = k_means_one_iteration_algorithm(point, centroids);
 		cudaDeviceSynchronize();
@@ -42,6 +45,30 @@ double kMeansClustering(DataPoints *point, const int num_clusters, MyDataType (*
 		{
 			std::cout << "EPOCH: " << epoch << " ERROR: " << error << std::endl;
 		}
+		if (END_AFTER_N_EPOCHES)
+		{
+			if (epoch >= NUM_EPOCHES)
+			{
+				break;
+			}
+		}
+		else
+		{
+			if (epoch == 0)
+			{
+				last_error = epoch;
+			}
+			else
+			{
+				if (std::abs(last_error - error) < EPS)
+				{
+					std::cout << "Diff between last error and currnet is closer then " << EPS << ", so ending computation";
+					break;
+				}
+				last_error = error;
+			}
+		}
+		epoch++;
 	}
 	DeallocateDataPoints(centroids);
 	return error;
@@ -87,12 +114,14 @@ int main(int argc, char **argv)
 		std::cout << "THURST implementation:  " << timer_thurst_version->total_time << "ms" << std::endl;
 
 		std::cout << "CPU implementation:     " << timer_cpu_version->total_time << "ms" << std::endl;
-
 		std::cout << "GPU implementation:     " << timer_gpu_version->total_time << "ms" << std::endl;
-		std::cout << "compute_centroids:      " << timer_compute_centroids->total_time << "ms" << std::endl;
-		std::cout << "find_closest_centroids: " << timer_find_closest_centroids->total_time << "ms" << std::endl;
-		std::cout << "timer_memory_allocation_gpu: " << timer_memory_allocation_gpu->total_time << "ms" << std::endl;
-		std::cout << "timer_data_generation: " << timer_data_generation->total_time << "ms" << std::endl;
+		if (MEASURE_TIME)
+		{
+			std::cout << "compute_centroids:      " << timer_compute_centroids->total_time << "ms" << std::endl;
+			std::cout << "find_closest_centroids: " << timer_find_closest_centroids->total_time << "ms" << std::endl;
+			std::cout << "timer_memory_allocation_gpu: " << timer_memory_allocation_gpu->total_time << "ms" << std::endl;
+			std::cout << "timer_data_generation: " << timer_data_generation->total_time << "ms" << std::endl;
+		}
 	}
 	else // test for many combinations of params
 	{

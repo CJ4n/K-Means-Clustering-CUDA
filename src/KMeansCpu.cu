@@ -1,4 +1,4 @@
-#include "kMeansCpu.h"
+#include "KMeansCpu.h"
 
 MyDataType KMeansOneIterationCpu(DataPoints *points, DataPoints *centroids)
 {

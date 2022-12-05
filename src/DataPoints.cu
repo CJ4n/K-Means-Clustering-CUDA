@@ -1,11 +1,11 @@
-#include <dataPoints.h>
+#include <DataPoints.h>
 
 #include <cuda.h>
 #include <thrust/reduce.h>
 
-#include "Constants.h"
-#include "cudaCheckError.h"
-#include "timer.h"
+#include "Config.h"
+#include "CudaCheckError.h"
+#include "Timer.h"
 
 DataPoints *AllocateDataPoints(int num_features, int num_data_points)
 {

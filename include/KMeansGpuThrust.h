@@ -1,6 +1,6 @@
 #pragma once
 #include <cuda.h>
 
-#include "dataPoints.h"
+#include "DataPoints.h"
 
 MyDataType KMeansOneIterationGpuThurst(DataPoints *points, DataPoints *centroids);

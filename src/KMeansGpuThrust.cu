@@ -1,12 +1,12 @@
-#include "kMeansGpuThrust.h"
+#include "KMeansGpuThrust.h"
 
 #include <iostream>
 #include <thrust/reduce.h>
 #include <thrust/device_vector.h>
-#include "cudaCheckError.h"
+#include "CudaCheckError.h"
 
-#include "findClosestCentriods.h"
-#include "Constants.h"
+#include "FindClosestCentriods.h"
+#include "Config.h"
 #include "vector"
 #include "string"
 

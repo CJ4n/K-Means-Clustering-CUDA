@@ -1,11 +1,11 @@
-#include "kMeansGpu.h"
+#include "KMeansGpu.h"
 
 #include "cuda.h"
 
-#include "Constants.h"
-#include "cudaCheckError.h"
-#include "findClosestCentriods.h"
-#include "timer.h"
+#include "Config.h"
+#include "CudaCheckError.h"
+#include "FindClosestCentriods.h"
+#include "Timer.h"
 
 // kernels
 

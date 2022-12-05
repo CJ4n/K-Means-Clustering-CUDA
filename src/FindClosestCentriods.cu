@@ -1,6 +1,6 @@
-#include "findClosestCentriods.h"
+#include "FindClosestCentriods.h"
 
-#include "Constants.h"
+#include "Config.h"
 
 #define INDEX_CLUSTER(f, c, num_clusters) ((f * num_clusters) + c)
 #define INDEX_POINT(f, tid, num_clusters, num_features) (num_features * num_clusters + tid * num_features + f)

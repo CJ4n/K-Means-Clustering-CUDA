@@ -1,8 +1,8 @@
 #include "GeneratePoints.h"
 
-#include <timer.h>
+#include <Timer.h>
 
-#include "Constants.h"
+#include "Config.h"
 
 DataPoints *GeneratePoints(const int num_features, const int num_points)
 {

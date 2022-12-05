@@ -1,6 +1,6 @@
-#include "timer.h"
+#include "Timer.h"
 
-#include "cudaCheckError.h"
+#include "CudaCheckError.h"
 
 GpuTimer::GpuTimer()
 {
