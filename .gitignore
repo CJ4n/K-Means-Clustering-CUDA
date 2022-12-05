@@ -1,5 +1,2 @@
 build/*
-output*.csv
-Input.csv
 .vscode/*
-correctoutput
