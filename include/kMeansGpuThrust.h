@@ -2,4 +2,4 @@
 #include <cuda.h>
 #include "dataPoints.h"
 
-void KMeansOneIterationGpuThurst(DataPoints *points, DataPoints *centroids);
+MyDataType KMeansOneIterationGpuThurst(DataPoints *points, DataPoints *centroids);

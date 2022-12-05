@@ -7,11 +7,13 @@
 #include "cudaCheckError.h"
 #include "timer.h"
 #include "Constants.h"
+#include <thrust/reduce.h>
+
 DataPoints *AllocateDataPoints(int num_features, int num_data_points, const bool malloc_managed)
 {
 	if (MEASURE_TIME)
 	{
-		timer_data_generations->Start();
+		timer_memory_allocation_gpu->Start();
 	}
 	// if (malloc_managed == false)
 	// {
@@ -76,8 +78,8 @@ DataPoints *AllocateDataPoints(int num_features, int num_data_points, const bool
 	}
 	if (MEASURE_TIME)
 	{
-		timer_data_generations->Stop();
-		timer_data_generations->Elapsed();
+		timer_memory_allocation_gpu->Stop();
+		timer_memory_allocation_gpu->Elapsed();
 	}
 	return point;
 	// }
@@ -87,7 +89,7 @@ void DeallocateDataPoints(DataPoints *data_points)
 {
 	if (MEASURE_TIME)
 	{
-		timer_data_generations->Start();
+		timer_memory_allocation_gpu->Start();
 	}
 	for (int f = 0; f < data_points->num_features; f++)
 	{
@@ -98,8 +100,8 @@ void DeallocateDataPoints(DataPoints *data_points)
 	cudaFree(data_points);
 	if (MEASURE_TIME)
 	{
-		timer_data_generations->Stop();
-		timer_data_generations->Elapsed();
+		timer_memory_allocation_gpu->Stop();
+		timer_memory_allocation_gpu->Elapsed();
 	}
 }
 
@@ -115,13 +117,85 @@ MyDataType Distance(const DataPoints *p1, const DataPoints *p2, const int point_
 #include <unistd.h>
 MyDataType MeanSquareError(const DataPoints *point, const DataPoints *centroid)
 {
-	MyDataType error = 0;
+	MyDataType error = 0.0;
 	for (int i = 0; i < point->num_data_points; ++i)
 	{
 		error += Distance(centroid, point, i, point->cluster_id_of_point[i]);
 	}
 	return error / point->num_data_points;
 }
+
+#define INDEX_CLUSTER(c, f, num_clusters) (f * num_clusters + c)
+
+template <int F_NUM>
+__global__ void CaleculateErrorsForEachPoint(const DataPoints *points,const DataPoints *centroids, MyDataType *sum_erros,const int num_clusters,const int num_points,const int active_threads_count)
+{// acctualy, one thrad calcualtes error for two points
+	extern __shared__ MyDataType shm_e1[];
+	const int tid = threadIdx.x;
+	const int gid_read = blockIdx.x * (blockDim.x * 2) + threadIdx.x;
+	const int gid_write = blockIdx.x * blockDim.x + threadIdx.x;
+
+	int c1, c2;
+
+	// shm_e1[INDEX_E1(tid)] = 0;
+	if (gid_read >= num_points)
+	{
+		return;
+	}
+	// if (tid >= active_threads_count)
+	// {
+	// 	return;
+	// }
+	c1 = points->cluster_id_of_point[gid_read];
+	if (gid_read + blockDim.x < num_points)
+	{
+		c2 = points->cluster_id_of_point[gid_read + blockDim.x];
+	}
+
+	MyDataType error = 0;
+	for (int f = 0; f < F_NUM; ++f)
+	{
+		MyDataType tmp = centroids->features_array[f][c1] - points->features_array[f][gid_read];
+
+		error += tmp * tmp;
+		if (gid_read + blockDim.x < num_points)
+		{
+			tmp = centroids->features_array[f][c2] - points->features_array[f][gid_read + blockDim.x];
+			error += tmp * tmp;
+		}
+	}
+
+	sum_erros[gid_write] = error;
+}
+template<int F_NUM>
+MyDataType MeanSquareErrorParallel(const DataPoints *points, const DataPoints *centroids)
+{
+	int N = points->num_data_points;
+	int num_threads = 1024;
+	int num_blocks = std::ceil(N / num_threads / 2);
+	int num_clusters=centroids->num_data_points;
+	MyDataType *errors;
+	cudaMallocManaged(&errors, sizeof(MyDataType) * N / 2);
+	cudaCheckError();
+	// cudaMemset(errors, 0, sizeof(MyDataType) * N / 2);
+	cudaCheckError();
+	size_t shm_e_size = sizeof(MyDataType) * F_NUM * num_clusters;
+	int act = num_threads;
+	CaleculateErrorsForEachPoint<F_NUM><<<num_blocks, num_threads, shm_e_size>>>(points, centroids, errors, num_clusters, N, act);
+	cudaDeviceSynchronize();
+	cudaCheckError();
+	auto res = thrust::reduce(errors, errors + N / 2, 0.0);
+	cudaDeviceSynchronize();
+	cudaCheckError();
+
+
+	MyDataType err = res / (MyDataType)points->num_data_points;
+	cudaFree(errors);
+	cudaCheckError();
+	return err;
+}
+
+template MyDataType MeanSquareErrorParallel<NUM_FEATURES>(const DataPoints *points, const DataPoints *centroids);
 
 // DataPoints *ReadCsv()
 // {
@@ -165,7 +239,7 @@ void SaveCsv(const DataPoints *point, const std::string file_name)
 	std::ofstream myfile;
 	std::remove(file_name.c_str());
 	myfile.open(file_name);
-	myfile << "x,y,c" << std::endl;
+	myfile << "x,y,z,c" << std::endl;
 
 	for (int i = 0; i < point->num_data_points; ++i)
 	{

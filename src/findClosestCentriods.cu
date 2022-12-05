@@ -1,7 +1,7 @@
 #include "findClosestCentriods.h"
 #include "Constants.h"
-#define INDEX_CLUSTER(f, c, num_clusters) (f * num_clusters) + c
-#define INDEX_POINT(f, tid, num_clusters, num_features) num_features *num_clusters + tid *num_features + f
+#define INDEX_CLUSTER(f, c, num_clusters) ((f * num_clusters) + c)
+#define INDEX_POINT(f, tid, num_clusters, num_features) (num_features *num_clusters + tid *num_features + f)
 template <int F_NUM>
 __global__ void FindClosestCentroids(MyDataType **features, int *centroids_ids, MyDataType **centeriods_features, const int num_points, const int num_features, const int num_clusters)
 {

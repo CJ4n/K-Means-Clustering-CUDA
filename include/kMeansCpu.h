@@ -1,4 +1,4 @@
 # pragma once
 #include "dataPoints.h"
 
- void KMeansOneIterationCpu(DataPoints *points, DataPoints *centroids);
+ MyDataType KMeansOneIterationCpu(DataPoints *points, DataPoints *centroids);

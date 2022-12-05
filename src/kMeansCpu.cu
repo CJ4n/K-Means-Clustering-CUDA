@@ -6,7 +6,7 @@
 #include <iostream>
 #include "findClosestCentriods.h"
 
-void KMeansOneIterationCpu(DataPoints *points, DataPoints *centroids)
+MyDataType KMeansOneIterationCpu(DataPoints *points, DataPoints *centroids)
 {
 	// init
 	int *nPoints = (int *)malloc(sizeof(int) * centroids->num_data_points);
@@ -74,4 +74,6 @@ void KMeansOneIterationCpu(DataPoints *points, DataPoints *centroids)
 		free(sum[feature]);
 	}
 	free(sum);
+	
+	return MeanSquareError(points, centroids);;
 }

@@ -34,111 +34,62 @@ DataPoints *GetCentroids(DataPoints *point, int num_clusters)
 	return centroids;
 }
 
-double kMeansClustering(DataPoints *point, int epochs, int num_clusters, void (*k_means_one_iteration_algorithm)(DataPoints *, DataPoints *))
+double kMeansClustering(DataPoints *point, const int num_clusters, MyDataType (*k_means_one_iteration_algorithm)(DataPoints *, DataPoints *))
 {
 	DataPoints *centroids = GetCentroids(point, num_clusters);
-	double final_error = 0;
-	// final_error = MeanSquareError(point, centroids);
-	// if (!DEBUG_PROGRAM)
-	// {
-	// 	std::cout << "EPOCH: " << -1 << " ERROR: " << final_error << std::endl;
-	// }
-	for (int epoch = 0; epoch < epochs; ++epoch)
+	MyDataType error = 0;
+	for (int epoch = 0; epoch < NUM_EPOCHES; ++epoch)
 	{
-		k_means_one_iteration_algorithm(point, centroids);
+		error = k_means_one_iteration_algorithm(point, centroids);
 		cudaDeviceSynchronize();
-
 		cudaCheckError();
-		// COMMENT/UNCOMMENT THIS SLEEP
-		// final_error = MeanSquareError(point, centroids);
+		// sleep(1);
 		if (!DEBUG_PROGRAM)
 		{
-			std::cout << "EPOCH: " << epoch << " ERROR: " << final_error << std::endl;
+			std::cout << "EPOCH: " << epoch << " ERROR: " << error << std::endl;
 		}
 	}
-
-	final_error = MeanSquareError(point, centroids);
-	if (!DEBUG_PROGRAM)
-	{
-		std::cout << "EPOCH: "
-				  << "afer algorithm"
-				  << " ERROR: " << final_error << std::endl;
-	}
 	DeallocateDataPoints(centroids);
-	return final_error;
+	return error;
 }
 
-double RunKMeansClustering(void (*k_means_one_iteration_algorithm)(DataPoints *, DataPoints *), std::string alg_name, int num_features, int num_points, int num_cluster, int num_epochs)
+double RunKMeansClustering(MyDataType (*k_means_one_iteration_algorithm)(DataPoints *, DataPoints *), std::string alg_name,
+						   const int num_points, const int num_cluster, GpuTimer *timer)
 {
-	timer_data_generations->total_time=0;
+	timer_memory_allocation_gpu->total_time = 0;
 	std::srand(0);
-	DataPoints *point = GeneratePoints(num_features, num_points);
-	double error = kMeansClustering(point, num_epochs, num_cluster, k_means_one_iteration_algorithm);
+	DataPoints *point = GeneratePoints(NUM_FEATURES, num_points);
+
+	timer->Start();
+	double error = kMeansClustering(point, num_cluster, k_means_one_iteration_algorithm);
+	timer->Stop();
+	timer->Elapsed();
+	// if (SAVE_DATA_POINTS == 1 && NUM_FEATURES == 3)
+	// 	SaveCsv(point, alg_name);
 	DeallocateDataPoints(point);
 	return error;
 }
-void InitTimers()
-{
-	timer_find_closest_centroids = new GpuTimer();
-	timer_compute_centroids = new GpuTimer();
-	timer_memory_allocation_gpu = new GpuTimer();
-	timer_gpu_version = new GpuTimer();
-	timer_thurst_version = new GpuTimer();
-	timer_cpu_version = new GpuTimer();
-	timer_data_generations = new GpuTimer();
-}
-
-void DeleteTimers()
-{
-	delete timer_compute_centroids;
-	delete timer_cpu_version;
-	delete timer_gpu_version;
-	delete timer_thurst_version;
-	delete timer_memory_allocation_gpu;
-	delete timer_find_closest_centroids;
-	delete timer_data_generations;
-}
-
-// jeśli sleep w lini 54 jest odkomentowany to wynik jest dobry, jeśli nie to jest losy, choziaż czasem zdarzy się że jest dobry.
-
-// jeśli DEBUG_PROGRAM w pliku kMeansGpu.cu w lini 263 jest ustawiony na 1 do też wynik jest dobry, jak go nie ma to wynik jest losowy, podobnie jak z sleep.
-
-// dodanie sleepa tak właściwe gdzie kolwiek w petli w 47 lini, sprawia że wynik jest dobry.
-
-// dodanie sleepa na początku(przed linia 434) lub na końcy pliku(po DeallocateDataPoints(reduced_points); linia 522) kMeansGpu.cu też pomaga, choziaż u mnie jak dam sleepa w lini 433 to pomaga
-// do dla kilku pierwszych epok, ale dla ostanij już nie. Ale to czy pomoże też jest często losowy.
-
-// Dla mnie to wygląda jak jakiś race condition między kolejnymi iteraciami algorytmu, tylko nie mam pojęcia dlaczego miałby w ogóle wysępować.
 
 int main(int argc, char **argv)
 {
-
-	std::cout << std::setprecision(15);
 	InitTimers();
+
+	std::cout << std::setprecision(10);
 	if (!DEBUG_PROGRAM)
 	{
 		//________________________________THRUST________________________________
 		std::cout << "----------------THURST----------------" << std::endl;
-		timer_thurst_version->Start();
-		// RunKMeansClustering(KMeansOneIterationGpuThurst, "THRUST", constants::num_features, constants::num_points, constants::num_cluster, constants::num_epoches);
-		timer_thurst_version->Stop();
-		timer_thurst_version->Elapsed();
+		// RunKMeansClustering(KMeansOneIterationGpuThurst, "THRUST",   NUM_POINTS, NUM_CLUSTERS,  timer_thurst_version);
 		//________________________________THRUST________________________________
 
 		//__________________________________CPU_________________________________
 		std::cout << "-----------------CPU------------------" << std::endl;
-		timer_cpu_version->Start();
-		RunKMeansClustering(KMeansOneIterationCpu, "CPU", NUM_FEATURES, NUM_POINTS, NUM_CLUSTERS, NUM_EPOCHES);
-		timer_cpu_version->Stop();
-		timer_cpu_version->Elapsed();
+		RunKMeansClustering(KMeansOneIterationCpu, "CPU", NUM_POINTS, NUM_CLUSTERS, timer_cpu_version);
 		//__________________________________CPU_________________________________
 
 		//__________________________________GPU_________________________________
 		std::cout << "-----------------GPU------------------" << std::endl;
-		timer_gpu_version->Start();
-		RunKMeansClustering(KMeansOneIterationGpu<NUM_FEATURES>, "GPU", NUM_FEATURES, NUM_POINTS, NUM_CLUSTERS, NUM_EPOCHES);
-		timer_gpu_version->Stop();
-		timer_gpu_version->Elapsed();
+		RunKMeansClustering(KMeansOneIterationGpu<NUM_FEATURES>, "GPU", NUM_POINTS, NUM_CLUSTERS, timer_gpu_version);
 		//__________________________________GPU_________________________________
 
 		std::cout << "THURST implementation:  " << timer_thurst_version->total_time << "ms" << std::endl;
@@ -148,31 +99,31 @@ int main(int argc, char **argv)
 		std::cout << "GPU implementation:     " << timer_gpu_version->total_time << "ms" << std::endl;
 		std::cout << "compute_centroids:      " << timer_compute_centroids->total_time << "ms" << std::endl;
 		std::cout << "find_closest_centroids: " << timer_find_closest_centroids->total_time << "ms" << std::endl;
-		std::cout << "timer_data_generations: " << timer_data_generations->total_time << "ms" << std::endl;
-
+		std::cout << "timer_memory_allocation_gpu: " << timer_memory_allocation_gpu->total_time << "ms" << std::endl;
+		std::cout << "timer_data_generation: " << timer_data_generation->total_time << "ms" << std::endl;
 	}
 	else // test for many combinations of params
 	{
-		int f = NUM_FEATURES;
+		// int f = NUM_FEATURES;
 		// for (int f = 1; f < 7; f++)
-		for (int c = 3; c < 12; c++)
-			for (int i = 17; i < 26; i++)
+		for (int c = 3; c < 10; c++)
+			for (int i = 17; i < 25; i++)
 			{
 				int num_points = 1 << i;
-				// problme bo numfeartes is tempalte a tu f sie zwiskza !!!!
-				const double exact_error = RunKMeansClustering(KMeansOneIterationCpu, "CPU", f, num_points, c, NUM_EPOCHES);
-				const double gpu_error = RunKMeansClustering(KMeansOneIterationGpu<NUM_FEATURES>, "GPU", f, num_points, c, NUM_EPOCHES);
-				std::cout<< "num_cluster: " << c << " num_feature: " << f << " num_points: i<<" << i <<std::endl;
-	
+				const MyDataType exact_error = RunKMeansClustering(KMeansOneIterationCpu, "CPU", num_points, c, timer_cpu_version);
+				const MyDataType gpu_error = RunKMeansClustering(KMeansOneIterationGpu<NUM_FEATURES>, "GPU", num_points, c, timer_gpu_version);
+				std::cout << "num_cluster: " << c << " num_feature: " << NUM_FEATURES << " num_points: i<<" << i << std::endl;
+
 				if (std::abs(exact_error - gpu_error) > 10e-7)
 				{
 					std::cout << "<<|||||||||||||||||||||||||dfd|||"
-							  << "num_cluster: " << c << " num_feature: " << f << " num_points: i<<" << i << "||||||||||||||||||||||||||||" << std::endl;
+							  << "num_cluster: " << c << " num_feature: " << NUM_FEATURES << " num_points: i<<" << i << "||||||||||||||||||||||||||||" << std::endl;
 					std::cout << "exact_error: " << exact_error << std::endl;
 					std::cout << "gpu_error:   " << gpu_error << std::endl;
 				}
 			}
 	}
+
 	DeleteTimers();
 	return 0;
 }
