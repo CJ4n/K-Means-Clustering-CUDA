@@ -19,19 +19,22 @@ DataPoints *GetCentroids(DataPoints *point, int num_clusters, const int num_feat
 	for (int i = 0; i < num_clusters; ++i)
 	{
 		// int n = rand() % point->num_data_points;
-		for (int feature = 0; feature <num_features; ++feature)
+		for (int feature = 0; feature < num_features; ++feature)
 		{
-			centroids->features_array[feature][i] = point->features_array[feature][i];
+			cudaMemcpy(&(centroids->features_array[feature][i]), &(point->features_array[feature][i]), sizeof(MyDataType), cudaMemcpyDefault);
+			cudaCheckError();
 		}
-
-		centroids->cluster_id_of_point[i] = i;
+		cudaMemcpy(&(centroids->cluster_id_of_point[i]), &(i), sizeof(int), cudaMemcpyDefault);
+		cudaCheckError();
+		// centroids->cluster_id_of_point[i] = i;
 	}
+
 	return centroids;
 }
 
 double kMeansClustering(DataPoints *point, const int num_clusters, MyDataType (*k_means_one_iteration_algorithm)(DataPoints *, DataPoints *))
 {
-	DataPoints *centroids = GetCentroids(point, num_clusters,NUM_FEATURES);
+	DataPoints *centroids = GetCentroids(point, num_clusters, NUM_FEATURES);
 	MyDataType error = 0;
 	MyDataType last_error = 0;
 	int epoch = 0;
@@ -72,7 +75,7 @@ double kMeansClustering(DataPoints *point, const int num_clusters, MyDataType (*
 			}
 		}
 	}
-	DeallocateDataPoints(centroids,NUM_FEATURES);
+	DeallocateDataPoints(centroids, NUM_FEATURES);
 	return error;
 }
 
@@ -81,13 +84,15 @@ double RunKMeansClustering(MyDataType (*k_means_one_iteration_algorithm)(DataPoi
 {
 	timer_memory_allocation_gpu->total_time = 0;
 	std::srand(0);
+
 	DataPoints *point = GeneratePoints(NUM_FEATURES, num_points);
+
 
 	timer->Start();
 	double error = kMeansClustering(point, num_cluster, k_means_one_iteration_algorithm);
 	timer->Stop();
 	timer->Elapsed();
-	DeallocateDataPoints(point,NUM_FEATURES);
+	DeallocateDataPoints(point, NUM_FEATURES);
 	return error;
 }
 
@@ -100,7 +105,7 @@ int main(int argc, char **argv)
 	{
 		//________________________________THRUST________________________________
 		std::cout << "----------------THURST----------------" << std::endl;
-		RunKMeansClustering(KMeansOneIterationGpuThurst<NUM_FEATURES>, "THRUST",   NUM_POINTS, NUM_CLUSTERS,  timer_thurst_version);
+		RunKMeansClustering(KMeansOneIterationGpuThurst<NUM_FEATURES>, "THRUST", NUM_POINTS, NUM_CLUSTERS, timer_thurst_version);
 		//________________________________THRUST________________________________
 
 		//__________________________________CPU_________________________________
@@ -135,13 +140,15 @@ int main(int argc, char **argv)
 				int num_points = 1 << i;
 				const MyDataType exact_error = RunKMeansClustering(KMeansOneIterationCpu<NUM_FEATURES>, "CPU", num_points, c, timer_cpu_version);
 				const MyDataType gpu_error = RunKMeansClustering(KMeansOneIterationGpu<NUM_FEATURES>, "GPU", num_points, c, timer_gpu_version);
+				// const MyDataType thurst_error = RunKMeansClustering(KMeansOneIterationGpuThurst<NUM_FEATURES>, "THURST", num_points, c, timer_thurst_version);
 
-				if (std::abs(exact_error - gpu_error) > 10e-7)
+				if (std::abs(exact_error - gpu_error) > 10e-7 /*|| std::abs(exact_error - thurst_error) > 10e-7*/)
 				{
-					std::cout << "<<|||||||||||||||||||||||||dfd|||"
+					std::cout << "<<||||||||||||||||||||||||||||"
 							  << "num_cluster: " << c << " num_feature: " << NUM_FEATURES << " num_points: i<<" << i << "||||||||||||||||||||||||||||" << std::endl;
 					std::cout << "exact_error: " << exact_error << std::endl;
 					std::cout << "gpu_error:   " << gpu_error << std::endl;
+					// std::cout << "thrust_error:   " << thurst_error << std::endl;
 				}
 			}
 		}

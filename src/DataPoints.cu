@@ -43,6 +43,32 @@ DataPoints *AllocateDataPoints(int num_features, int num_data_points)
 	return point;
 }
 
+DataPoints *AllocateDataPointsDevice(int num_features, int num_data_points, DataPoints *p)
+{
+	DataPoints *point;
+	cudaMallocManaged(&point, sizeof(DataPoints));
+	cudaCheckError();
+	point->num_data_points = p->num_data_points;
+
+	cudaMalloc(&(point->cluster_id_of_point), sizeof(int) * num_data_points);
+	cudaCheckError();
+	cudaMemcpy((void *)(point->cluster_id_of_point), (void *)(p->cluster_id_of_point), sizeof(int) * num_data_points, cudaMemcpyDefault);
+	cudaCheckError();
+
+	cudaMallocManaged(&(point->features_array), sizeof(*(point->features_array)) * num_features);
+	cudaCheckError();
+
+	for (int feature = 0; feature < num_features; ++feature)
+	{
+		cudaMalloc(&(point->features_array[feature]), sizeof(MyDataType) * num_data_points);
+		cudaCheckError();
+		cudaMemcpy((void *)(point->features_array[feature]), (void *)(p->features_array[feature]), sizeof(MyDataType) * num_data_points, cudaMemcpyDefault);
+		cudaCheckError();
+	}
+
+	return point;
+}
+
 void DeallocateDataPoints(DataPoints *data_points, const int num_features)
 {
 	if (MEASURE_TIME)
