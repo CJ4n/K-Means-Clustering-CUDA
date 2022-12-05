@@ -45,6 +45,9 @@ double kMeansClustering(DataPoints *point, const int num_clusters, MyDataType (*
 		{
 			std::cout << "EPOCH: " << epoch << " ERROR: " << error << std::endl;
 		}
+
+		epoch++;
+
 		if (END_AFTER_N_EPOCHES)
 		{
 			if (epoch >= NUM_EPOCHES)
@@ -56,7 +59,7 @@ double kMeansClustering(DataPoints *point, const int num_clusters, MyDataType (*
 		{
 			if (epoch == 0)
 			{
-				last_error = epoch;
+				last_error = error;
 			}
 			else
 			{
@@ -68,7 +71,6 @@ double kMeansClustering(DataPoints *point, const int num_clusters, MyDataType (*
 				last_error = error;
 			}
 		}
-		epoch++;
 	}
 	DeallocateDataPoints(centroids);
 	return error;
@@ -98,12 +100,12 @@ int main(int argc, char **argv)
 	{
 		//________________________________THRUST________________________________
 		std::cout << "----------------THURST----------------" << std::endl;
-		// RunKMeansClustering(KMeansOneIterationGpuThurst, "THRUST",   NUM_POINTS, NUM_CLUSTERS,  timer_thurst_version);
+		RunKMeansClustering(KMeansOneIterationGpuThurst<NUM_FEATURES>, "THRUST",   NUM_POINTS, NUM_CLUSTERS,  timer_thurst_version);
 		//________________________________THRUST________________________________
 
 		//__________________________________CPU_________________________________
 		std::cout << "-----------------CPU------------------" << std::endl;
-		RunKMeansClustering(KMeansOneIterationCpu, "CPU", NUM_POINTS, NUM_CLUSTERS, timer_cpu_version);
+		RunKMeansClustering(KMeansOneIterationCpu<NUM_FEATURES>, "CPU", NUM_POINTS, NUM_CLUSTERS, timer_cpu_version);
 		//__________________________________CPU_________________________________
 
 		//__________________________________GPU_________________________________
@@ -129,10 +131,10 @@ int main(int argc, char **argv)
 		{
 			for (int i = 17; i < 25; i++)
 			{
-				int num_points = 1 << i;
-				const MyDataType exact_error = RunKMeansClustering(KMeansOneIterationCpu, "CPU", num_points, c, timer_cpu_version);
-				const MyDataType gpu_error = RunKMeansClustering(KMeansOneIterationGpu<NUM_FEATURES>, "GPU", num_points, c, timer_gpu_version);
 				std::cout << "num_cluster: " << c << " num_feature: " << NUM_FEATURES << " num_points: i<<" << i << std::endl;
+				int num_points = 1 << i;
+				const MyDataType exact_error = RunKMeansClustering(KMeansOneIterationCpu<NUM_FEATURES>, "CPU", num_points, c, timer_cpu_version);
+				const MyDataType gpu_error = RunKMeansClustering(KMeansOneIterationGpu<NUM_FEATURES>, "GPU", num_points, c, timer_gpu_version);
 
 				if (std::abs(exact_error - gpu_error) > 10e-7)
 				{

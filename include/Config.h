@@ -1,9 +1,9 @@
 #pragma once
 
 // algorithm params
-#define NUM_CLUSTERS 9
+#define NUM_CLUSTERS 3
 #define NUM_FEATURES 3
-#define NUM_POINTS 1 << 21
+#define NUM_POINTS 1 << 20
 
 #define NUM_EPOCHES 4
 #define EPS 1e-1

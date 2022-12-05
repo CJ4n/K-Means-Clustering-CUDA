@@ -1,12 +1,15 @@
 #include "KMeansCpu.h"
 
+#include "Config.h"
+
+template <int F_NUM>
 MyDataType KMeansOneIterationCpu(DataPoints *points, DataPoints *centroids)
 {
 	// init
 	int *nPoints = (int *)malloc(sizeof(int) * centroids->num_data_points);
-	double **sum = (double **)malloc(sizeof(*(points->features_array)) * centroids->num_features);
+	double **sum = (double **)malloc(sizeof(*(points->features_array)) * F_NUM);
 
-	for (int feature = 0; feature < points->num_features; ++feature)
+	for (int feature = 0; feature < F_NUM; ++feature)
 	{
 		sum[feature] = (double *)malloc(sizeof(**(points->features_array)) * centroids->num_data_points);
 	}
@@ -14,7 +17,7 @@ MyDataType KMeansOneIterationCpu(DataPoints *points, DataPoints *centroids)
 	{
 		nPoints[c] = 0;
 
-		for (int feature = 0; feature < points->num_features; ++feature)
+		for (int feature = 0; feature < F_NUM; ++feature)
 		{
 			sum[feature][c] = 0;
 		}
@@ -40,7 +43,7 @@ MyDataType KMeansOneIterationCpu(DataPoints *points, DataPoints *centroids)
 	// sum all points 'belonging' to each centroid
 	for (int p = 0; p < points->num_data_points; ++p)
 	{
-		for (int feature = 0; feature < points->num_features; ++feature)
+		for (int feature = 0; feature < F_NUM; ++feature)
 		{
 			sum[feature][points->cluster_id_of_point[p]] += points->features_array[feature][p];
 		}
@@ -49,7 +52,7 @@ MyDataType KMeansOneIterationCpu(DataPoints *points, DataPoints *centroids)
 	// sum all points 'belonging' to each centroid
 
 	// get centroids new location
-	for (int feature = 0; feature < points->num_features; ++feature)
+	for (int feature = 0; feature < F_NUM; ++feature)
 	{
 		for (int c = 0; c < centroids->num_data_points; ++c)
 		{
@@ -60,12 +63,13 @@ MyDataType KMeansOneIterationCpu(DataPoints *points, DataPoints *centroids)
 
 	free(nPoints);
 
-	for (int feature = 0; feature < points->num_features; ++feature)
+	for (int feature = 0; feature < F_NUM; ++feature)
 	{
 		free(sum[feature]);
 	}
 	free(sum);
 
 	return MeanSquareError(points, centroids);
-	;
 }
+
+template MyDataType KMeansOneIterationCpu<NUM_FEATURES>(DataPoints *points, DataPoints *centroids);

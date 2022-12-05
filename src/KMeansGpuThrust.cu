@@ -10,6 +10,7 @@
 #include "vector"
 #include "string"
 
+template <int F_NUM>
 MyDataType KMeansOneIterationGpuThurst(DataPoints *points, DataPoints *centroids)
 {
 	const int N = points->num_data_points;
@@ -94,3 +95,5 @@ MyDataType KMeansOneIterationGpuThurst(DataPoints *points, DataPoints *centroids
 	return 0;
 	// find new positions of the clusters
 }
+
+template MyDataType KMeansOneIterationGpuThurst<NUM_FEATURES>(DataPoints *points, DataPoints *centroids);

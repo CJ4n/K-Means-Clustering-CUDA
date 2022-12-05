@@ -360,7 +360,6 @@ void debugFunction(DataPoints *points, CountType *ids_count, int num_clusters, i
 	for (int i = 0; i < points->num_data_points; ++i)
 	{
 		count_check[points->cluster_id_of_point[i]]++;
-		// std::cout<<points->cluster_id_of_point[i]<<", ";
 	}
 	std::cout << "Exact ids count\n{\n	";
 	for (int c = 0; c < num_clusters; ++c)
@@ -610,7 +609,7 @@ MyDataType KMeansOneIterationGpu(DataPoints *points, DataPoints *centroids)
 	// find new centroids
 
 	// clean up, if it is last epoch
-	if (cur_epoch + 1 == NUM_EPOCHES)
+	if (cur_epoch + 1 == NUM_EPOCHES && END_AFTER_N_EPOCHES)
 	{
 		DeallocateDataPoints(reduced_points);
 		cudaCheckError();
