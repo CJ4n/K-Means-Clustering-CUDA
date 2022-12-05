@@ -16,7 +16,7 @@ MyDataType KMeansOneIterationGpuThurst(DataPoints *points, DataPoints *centroids
 	const int N = points->num_data_points;
 	const int num_threads = 1024;
 	const int num_points = points->num_data_points;
-	const int num_features = points->num_features;
+	const int num_features = F_NUM;
 	const int num_clusters = centroids->num_data_points;
 	int num_blocks = (int)std::max(std::ceil(((double)N / (double)num_threads)), 1.0);
 	// get nearest clusters
@@ -39,49 +39,65 @@ MyDataType KMeansOneIterationGpuThurst(DataPoints *points, DataPoints *centroids
 
 	// find new positions of the clusters
 
-	int *keys_copy;
-	cudaMallocManaged(&keys_copy, sizeof(int) * num_points);
-	cudaCheckError();
-	cudaMemcpyAsync(keys_copy, points->cluster_id_of_point, sizeof(int) * num_points, cudaMemcpyDeviceToDevice);
-	cudaCheckError();
+	int **keys_copy;
+	cudaMallocManaged(&keys_copy, sizeof(int *) * F_NUM);
 
-	float *features_copy;
-	cudaMallocManaged(&features_copy, sizeof(MyDataType) * num_points);
-	cudaCheckError();
-	cudaMemcpyAsync(features_copy, points->features_array[0], sizeof(MyDataType) * num_points, cudaMemcpyDeviceToDevice);
-	cudaCheckError();
+	MyDataType **features_copy;
+	cudaMallocManaged(&features_copy, sizeof(MyDataType *) * F_NUM);
 
-	float *sumed_position_out;
-	cudaMallocManaged(&sumed_position_out, sizeof(MyDataType) * num_clusters);
-	cudaCheckError();
-	int *keys_out;
-	cudaMallocManaged(&keys_out, sizeof(int) * num_clusters);
-	cudaCheckError();
+	MyDataType **sumed_position_out;
+	cudaMallocManaged(&sumed_position_out, sizeof(MyDataType *) * F_NUM);
 
-	for (int feature = 0; feature < num_features; ++feature)
+	int **keys_out;
+	cudaMallocManaged(&keys_out, sizeof(MyDataType *) * F_NUM);
+
+	for (int f = 0; f < F_NUM; ++f)
+	{
+		cudaMallocManaged(&(keys_copy[f]), sizeof(int) * num_points);
+		cudaCheckError();
+		cudaMemcpyAsync(keys_copy[f], points->cluster_id_of_point, sizeof(int) * num_points, cudaMemcpyDeviceToDevice);
+		cudaCheckError();
+
+		cudaMallocManaged(&(features_copy[f]), sizeof(MyDataType) * num_points);
+		cudaCheckError();
+		cudaMemcpyAsync(features_copy[f], points->features_array[f], sizeof(MyDataType) * num_points, cudaMemcpyDeviceToDevice);
+		cudaCheckError();
+
+		cudaMallocManaged(&(sumed_position_out[f]), sizeof(MyDataType) * num_clusters);
+		cudaCheckError();
+
+		cudaMallocManaged(&(keys_out[f]), sizeof(int) * num_clusters);
+		cudaCheckError();
+	}
+
+	cudaDeviceSynchronize();
+	for (int f = 0; f < num_features; ++f)
 	{
 		// mozna by jakich prefetch zrobic tych danych tj. wczeniej poleciec async copy i miec odrazy wszyskie dane
 		// co jeszce o tym pomyslec
-		cudaDeviceSynchronize();
 		cudaCheckError();
 
-		thrust::sort_by_key(keys_copy, keys_copy + num_points, features_copy);
+		thrust::sort_by_key(keys_copy[f], keys_copy[f] + num_points, features_copy[f]);
 
-		auto new_end = thrust::reduce_by_key(keys_copy, keys_copy + num_points, features_copy, keys_out, sumed_position_out);
+		auto new_end = thrust::reduce_by_key(keys_copy[f], keys_copy[f] + num_points, features_copy[f], keys_out[f], sumed_position_out[f]);
 		cudaCheckError();
 
-		if (feature + 1 < num_features)
-		{
-			cudaMemcpyAsync(keys_copy, points->cluster_id_of_point, sizeof(int) * num_points, cudaMemcpyDeviceToDevice);
-			cudaCheckError();
+		// if (feature + 1 < num_features)
+		// {
+		// 	cudaMemcpyAsync(keys_copy, points->cluster_id_of_point, sizeof(int) * num_points, cudaMemcpyDeviceToDevice);
+		// 	cudaCheckError();
 
-			cudaMemcpyAsync(features_copy, points->features_array[feature + 1], sizeof(MyDataType) * num_points, cudaMemcpyDeviceToDevice);
-			cudaCheckError();
-		}
+		// 	cudaMemcpyAsync(features_copy, points->features_array[feature + 1], sizeof(MyDataType) * num_points, cudaMemcpyDeviceToDevice);
+		// 	cudaCheckError();
+		// }
+	}
+	cudaDeviceSynchronize();
+	for (int f = 0; f < num_features; ++f)
+	{
 
 		for (auto c = 0; c < num_clusters; c++)
 		{
-			centroids->features_array[feature][c] = sumed_position_out[c] / count[c];
+			centroids->features_array[f][c] = sumed_position_out[f][c] / count[c];
 		}
 	}
 	cudaFree(keys_copy);
@@ -92,7 +108,7 @@ MyDataType KMeansOneIterationGpuThurst(DataPoints *points, DataPoints *centroids
 	cudaCheckError();
 	cudaFree(keys_out);
 	cudaCheckError();
-	return 0;
+	return MeanSquareErrorParallel<F_NUM>(points, centroids);
 	// find new positions of the clusters
 }
 

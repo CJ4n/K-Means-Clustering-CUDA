@@ -2,5 +2,5 @@
 
 #include "DataPoints.h"
 
-template <int N_FEATURES>
+template <int F_NUM>
 MyDataType KMeansOneIterationGpu(DataPoints *points, DataPoints *centroids);

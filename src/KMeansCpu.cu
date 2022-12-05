@@ -30,7 +30,7 @@ MyDataType KMeansOneIterationCpu(DataPoints *points, DataPoints *centroids)
 		MyDataType min_dist = __DBL_MAX__;
 		for (int c = 0; c < centroids->num_data_points; ++c)
 		{
-			MyDataType dist = Distance(centroids, points, p, c);
+			MyDataType dist = Distance(centroids, points, p, c,F_NUM);
 			if (dist < min_dist)
 			{
 				min_dist = dist;
@@ -69,7 +69,7 @@ MyDataType KMeansOneIterationCpu(DataPoints *points, DataPoints *centroids)
 	}
 	free(sum);
 
-	return MeanSquareError(points, centroids);
+	return MeanSquareError(points, centroids,F_NUM);
 }
 
 template MyDataType KMeansOneIterationCpu<NUM_FEATURES>(DataPoints *points, DataPoints *centroids);

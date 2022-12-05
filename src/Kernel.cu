@@ -12,14 +12,14 @@
 #include "KMeansGpuThrust.h"
 #include "Timer.h"
 
-DataPoints *GetCentroids(DataPoints *point, int num_clusters)
+DataPoints *GetCentroids(DataPoints *point, int num_clusters, const int num_features)
 {
-	DataPoints *centroids = AllocateDataPoints(point->num_features, num_clusters);
+	DataPoints *centroids = AllocateDataPoints(num_features, num_clusters);
 
 	for (int i = 0; i < num_clusters; ++i)
 	{
 		// int n = rand() % point->num_data_points;
-		for (int feature = 0; feature < point->num_features; ++feature)
+		for (int feature = 0; feature <num_features; ++feature)
 		{
 			centroids->features_array[feature][i] = point->features_array[feature][i];
 		}
@@ -31,7 +31,7 @@ DataPoints *GetCentroids(DataPoints *point, int num_clusters)
 
 double kMeansClustering(DataPoints *point, const int num_clusters, MyDataType (*k_means_one_iteration_algorithm)(DataPoints *, DataPoints *))
 {
-	DataPoints *centroids = GetCentroids(point, num_clusters);
+	DataPoints *centroids = GetCentroids(point, num_clusters,NUM_FEATURES);
 	MyDataType error = 0;
 	MyDataType last_error = 0;
 	int epoch = 0;
@@ -72,7 +72,7 @@ double kMeansClustering(DataPoints *point, const int num_clusters, MyDataType (*
 			}
 		}
 	}
-	DeallocateDataPoints(centroids);
+	DeallocateDataPoints(centroids,NUM_FEATURES);
 	return error;
 }
 
@@ -87,7 +87,7 @@ double RunKMeansClustering(MyDataType (*k_means_one_iteration_algorithm)(DataPoi
 	double error = kMeansClustering(point, num_cluster, k_means_one_iteration_algorithm);
 	timer->Stop();
 	timer->Elapsed();
-	DeallocateDataPoints(point);
+	DeallocateDataPoints(point,NUM_FEATURES);
 	return error;
 }
 
