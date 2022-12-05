@@ -1,8 +1,5 @@
-#include <ctime>
 #include <cuda.h>
 #include <iostream>
-#include <math.h>
-#include <vector>
 #include <unistd.h>
 #include <iomanip>
 
@@ -11,11 +8,9 @@
 #include "dataPoints.h"
 #include "GeneratePoints.h"
 #include "kMeansCpu.h"
-#include "kMeansGpuThrust.h"
 #include "kMeansGpu.h"
+#include "kMeansGpuThrust.h"
 #include "timer.h"
-
-#define RANDOM_CENTROID_INITIALIZATION 0
 
 DataPoints *GetCentroids(DataPoints *point, int num_clusters)
 {
@@ -43,7 +38,6 @@ double kMeansClustering(DataPoints *point, const int num_clusters, MyDataType (*
 		error = k_means_one_iteration_algorithm(point, centroids);
 		cudaDeviceSynchronize();
 		cudaCheckError();
-		// sleep(1);
 		if (!DEBUG_PROGRAM)
 		{
 			std::cout << "EPOCH: " << epoch << " ERROR: " << error << std::endl;
@@ -64,8 +58,6 @@ double RunKMeansClustering(MyDataType (*k_means_one_iteration_algorithm)(DataPoi
 	double error = kMeansClustering(point, num_cluster, k_means_one_iteration_algorithm);
 	timer->Stop();
 	timer->Elapsed();
-	// if (SAVE_DATA_POINTS == 1 && NUM_FEATURES == 3)
-	// 	SaveCsv(point, alg_name);
 	DeallocateDataPoints(point);
 	return error;
 }
@@ -104,9 +96,8 @@ int main(int argc, char **argv)
 	}
 	else // test for many combinations of params
 	{
-		// int f = NUM_FEATURES;
-		// for (int f = 1; f < 7; f++)
 		for (int c = 3; c < 10; c++)
+		{
 			for (int i = 17; i < 25; i++)
 			{
 				int num_points = 1 << i;
@@ -122,6 +113,7 @@ int main(int argc, char **argv)
 					std::cout << "gpu_error:   " << gpu_error << std::endl;
 				}
 			}
+		}
 	}
 
 	DeleteTimers();

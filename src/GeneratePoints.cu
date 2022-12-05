@@ -1,9 +1,9 @@
 #include "GeneratePoints.h"
-#include <ctime>
+
 #include <timer.h>
 
-#define MIN_FEATURE_VALUE 0
-#define MAX_FEATURE_VALUE 35
+#include "Constants.h"
+
 DataPoints *GeneratePoints(const int num_features, const int num_points)
 {
     timer_data_generation->total_time = 0;

@@ -62,12 +62,12 @@ MyDataType KMeansOneIterationGpuThurst(DataPoints *points, DataPoints *centroids
 		// mozna by jakich prefetch zrobic tych danych tj. wczeniej poleciec async copy i miec odrazy wszyskie dane
 		// co jeszce o tym pomyslec
 		cudaDeviceSynchronize();
-	cudaCheckError();
+		cudaCheckError();
 
 		thrust::sort_by_key(keys_copy, keys_copy + num_points, features_copy);
 
 		auto new_end = thrust::reduce_by_key(keys_copy, keys_copy + num_points, features_copy, keys_out, sumed_position_out);
-	cudaCheckError();
+		cudaCheckError();
 
 		if (feature + 1 < num_features)
 		{

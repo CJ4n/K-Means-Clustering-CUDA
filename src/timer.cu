@@ -1,37 +1,38 @@
 #include "timer.h"
+
 #include "cudaCheckError.h"
 
 GpuTimer::GpuTimer()
 {
-      total_time = 0;
-      cudaEventCreate(&start);
-      cudaEventCreate(&stop);
+	total_time = 0;
+	cudaEventCreate(&start);
+	cudaEventCreate(&stop);
 }
 
 GpuTimer::~GpuTimer()
 {
-      cudaEventDestroy(start);
+	cudaEventDestroy(start);
 
-      cudaEventDestroy(stop);
+	cudaEventDestroy(stop);
 }
 
 void GpuTimer::Start()
 {
-      cudaEventRecord(start);
+	cudaEventRecord(start);
 }
 
 void GpuTimer::Stop()
 {
-      cudaEventRecord(stop);
+	cudaEventRecord(stop);
 }
 
 float GpuTimer::Elapsed()
 {
-      float elapsed;
-      cudaEventSynchronize(stop);
-      cudaEventElapsedTime(&elapsed, start, stop);
-      total_time += elapsed;
-      return elapsed;
+	float elapsed;
+	cudaEventSynchronize(stop);
+	cudaEventElapsedTime(&elapsed, start, stop);
+	total_time += elapsed;
+	return elapsed;
 }
 
 void InitTimers()
@@ -55,7 +56,6 @@ void DeleteTimers()
 	delete timer_find_closest_centroids;
 	delete timer_memory_allocation_gpu;
 }
-
 
 GpuTimer *timer_find_closest_centroids;
 GpuTimer *timer_compute_centroids;

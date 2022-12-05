@@ -1,7 +1,5 @@
 #include "kMeansGpu.h"
 
-#include <unistd.h>
-
 #include "cuda.h"
 
 #include "Constants.h"
@@ -256,7 +254,6 @@ __global__ void ReduceDataPointsByFeatures(MyDataType *features, const int *clus
 
 __global__ void FindNewCentroids(DataPoints *centroids, CountType *count, DataPoints *reduced_points)
 {
-	const int gid = blockIdx.x * blockDim.x + threadIdx.x;
 	const int f = threadIdx.x;
 	const int c = threadIdx.y;
 	centroids->features_array[f][c] = reduced_points->features_array[f][c] / (MyDataType)count[c];
@@ -633,6 +630,5 @@ MyDataType KMeansOneIterationGpu(DataPoints *points, DataPoints *centroids)
 	// }
 	return MeanSquareErrorParallel<N_FEATURES>(points, centroids);
 }
-
 
 template MyDataType KMeansOneIterationGpu<NUM_FEATURES>(DataPoints *points, DataPoints *centroids);

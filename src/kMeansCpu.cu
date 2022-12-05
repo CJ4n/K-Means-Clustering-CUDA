@@ -1,10 +1,4 @@
 #include "kMeansCpu.h"
-// #pragma once
-
-#include <vector>
-#include <string>
-#include <iostream>
-#include "findClosestCentriods.h"
 
 MyDataType KMeansOneIterationCpu(DataPoints *points, DataPoints *centroids)
 {
@@ -19,7 +13,6 @@ MyDataType KMeansOneIterationCpu(DataPoints *points, DataPoints *centroids)
 	for (int c = 0; c < centroids->num_data_points; ++c)
 	{
 		nPoints[c] = 0;
-		std::vector<double> tmp;
 
 		for (int feature = 0; feature < points->num_features; ++feature)
 		{
@@ -31,7 +24,7 @@ MyDataType KMeansOneIterationCpu(DataPoints *points, DataPoints *centroids)
 	// get nearest cluster
 	for (int p = 0; p < points->num_data_points; ++p)
 	{
-		MyDataType min_dist= __DBL_MAX__;
+		MyDataType min_dist = __DBL_MAX__;
 		for (int c = 0; c < centroids->num_data_points; ++c)
 		{
 			MyDataType dist = Distance(centroids, points, p, c);
@@ -41,8 +34,6 @@ MyDataType KMeansOneIterationCpu(DataPoints *points, DataPoints *centroids)
 				points->cluster_id_of_point[p] = c;
 			}
 		}
-		int cid = points->cluster_id_of_point[p];
-
 	}
 	// get nearest cluster
 
@@ -74,6 +65,7 @@ MyDataType KMeansOneIterationCpu(DataPoints *points, DataPoints *centroids)
 		free(sum[feature]);
 	}
 	free(sum);
-	
-	return MeanSquareError(points, centroids);;
+
+	return MeanSquareError(points, centroids);
+	;
 }

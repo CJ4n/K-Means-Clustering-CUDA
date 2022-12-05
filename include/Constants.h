@@ -5,6 +5,8 @@
 #define NUM_FEATURES 3
 #define NUM_CLUSTERS 3
 #define NUM_EPOCHES 4
+#define MIN_FEATURE_VALUE 0
+#define MAX_FEATURE_VALUE 35
 // algorithm params
 
 // execution params
