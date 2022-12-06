@@ -21,10 +21,10 @@ DataPoints *GetCentroids(DataPoints *point, int num_clusters, const int num_feat
 		// int n = rand() % point->num_data_points;
 		for (int feature = 0; feature < num_features; ++feature)
 		{
-			cudaMemcpy(&(centroids->features_array[feature][i]), &(point->features_array[feature][i]), sizeof(MyDataType), cudaMemcpyDefault);
+			centroids->features_array[feature][i] = point->features_array[feature][i];
 			cudaCheckError();
 		}
-		cudaMemcpy(&(centroids->cluster_id_of_point[i]), &(i), sizeof(int), cudaMemcpyDefault);
+		centroids->cluster_id_of_point[i] = i;
 		cudaCheckError();
 		// centroids->cluster_id_of_point[i] = i;
 	}
@@ -86,7 +86,6 @@ double RunKMeansClustering(MyDataType (*k_means_one_iteration_algorithm)(DataPoi
 	std::srand(0);
 
 	DataPoints *point = GeneratePoints(NUM_FEATURES, num_points);
-
 
 	timer->Start();
 	double error = kMeansClustering(point, num_cluster, k_means_one_iteration_algorithm);

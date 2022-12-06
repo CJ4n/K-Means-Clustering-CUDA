@@ -456,7 +456,7 @@ MyDataType KMeansOneIterationGpu(DataPoints *points, DataPoints *centroids)
 	int N = points->num_data_points;
 
 	// Find closest centroids for each datapoint
-	const int num_threads_find_closest = 1024;
+	const int num_threads_find_closest = 512;
 	const int num_blocks_find_closest = std::max(1, (int)std::ceil(points->num_data_points / num_threads_find_closest));
 	const size_t shm_find_closest = sizeof(MyDataType) * num_clusters * F_NUM + sizeof(MyDataType) * num_threads_find_closest * F_NUM;
 	if (MEASURE_TIME)

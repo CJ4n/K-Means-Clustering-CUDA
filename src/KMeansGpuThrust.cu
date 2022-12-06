@@ -13,7 +13,7 @@
 template <int F_NUM>
 MyDataType KMeansOneIterationGpuThurst(DataPoints *points, DataPoints *centroids)
 {
-	const int num_threads = 1024;
+	const int num_threads = 512;
 	const int num_points = points->num_data_points;
 	const int num_features = F_NUM;
 	const int num_clusters = centroids->num_data_points;
